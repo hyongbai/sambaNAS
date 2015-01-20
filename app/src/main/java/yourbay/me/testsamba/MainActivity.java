@@ -229,4 +229,17 @@ public class MainActivity extends SambaActivity {
         return f.getAbsolutePath();
     }
 
+    @Override
+    protected void updateResult(final String action, final String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvResult.append("\n");
+                tvResult.append("=========" + String.valueOf(action).toUpperCase() + "========");
+                tvResult.append("\n");
+                tvResult.append(msg);
+            }
+        });
+    }
+
 }
