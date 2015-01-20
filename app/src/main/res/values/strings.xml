@@ -4,5 +4,8 @@
     <string name="app_name">TestSamba</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_smb_home">Home</string>
+    <string name="download">Download</string>
+    <string name="upload">Upload</string>
+    <string name="upload_video">Upload Video</string>
 
 </resources>

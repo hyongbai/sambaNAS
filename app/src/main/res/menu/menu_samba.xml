@@ -7,4 +7,44 @@
         android:title="@string/action_smb_home"
         android:orderInCategory="100"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_upload"
+        android:title="Upload picture"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_upload_video"
+        android:title="Upload video"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_download"
+        android:title="@string/download"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_create_folder"
+        android:title="Create folder"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete_file"
+        android:title="Delete file"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete_folder"
+        android:title="Delete folder"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear"
+        android:title="clear"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
 </menu>

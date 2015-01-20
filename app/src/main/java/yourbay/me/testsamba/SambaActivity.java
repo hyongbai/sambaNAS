@@ -1,87 +1,55 @@
 package yourbay.me.testsamba;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
-import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import yourbay.me.testsamba.samba.Config;
-import yourbay.me.testsamba.samba.ConfigDesk79;
 import yourbay.me.testsamba.samba.SambaUtil;
 
 
-public class SambaActivity extends ActionBarActivity implements View.OnClickListener {
+public class SambaActivity extends SambaOperateActivity {
 
     //    private final static String TAG = "SambaActivity";
-    private final static String TAG = SambaUtil.TAG;
-    private final static String LOCAL_FOLDER_PATH = "/test/samba";
-    private final static String REMOTE_PARENT = "   ... ";
-    private final static String REMOTE_FOLDER_PREFIX = " > ";
-    private final static String REMOTE_FILE_PREFIX = "    ";
-    private final static int REQUEST_CODE_CHOOSE_IMAGE = 1234;
-    private SmbFile EMPTY_REMOTE_FILE;
-    private TextView tvResult;
-    private TextView tvCurrent;
-    private String curRemoteFolder;
-    private String curRemoteFile;
-    private Map<String, SmbFile> REMOTE_PATHS = new LinkedHashMap<>();
-    private ArrayAdapter<String> adapter;
-    private Config mConfig;
-    private boolean isAutoSelected = false;
     private Spinner mSpinner;
+    private TextView tvResult;
+    private TextView tvSelectedFile;
+    private EditText editText;
+
+    protected ArrayAdapter<String> adapter;
+
+    protected boolean isAutoSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mConfig = new ConfigDesk79();
-        try {
-            EMPTY_REMOTE_FILE = new SmbFile("");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         setContentView(R.layout.activity_samba);
-        findViewById(R.id.btn_list).setOnClickListener(this);
-        findViewById(R.id.btn_upload).setOnClickListener(this);
-        findViewById(R.id.btn_down).setOnClickListener(this);
-        findViewById(R.id.btn_clear).setOnClickListener(this);
         tvResult = (TextView) findViewById(R.id.tv_result);
-        tvCurrent = (TextView) findViewById(R.id.tv_selected);
-        curRemoteFolder = "/samba/0upload/IMG_test_fix_exif_date.jpg/";
+        tvSelectedFile = (TextView) findViewById(R.id.tv_selected_file);
         initSpinner();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_samba, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_smb_home) {
-
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -103,19 +71,60 @@ public class SambaActivity extends ActionBarActivity implements View.OnClickList
     }
 
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.btn_upload) {
-            IntentUtils.pickupImages(this, REQUEST_CODE_CHOOSE_IMAGE);
-        } else if (id == R.id.btn_down) {
-            download(genLocalPath(), curRemoteFile);
-        } else if (id == R.id.btn_list) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_smb_home) {
             list();
-        } else if (id == R.id.btn_clear) {
+        } else if (id == R.id.action_upload) {
+            IntentUtils.pickupImages(this, REQUEST_CODE_CHOOSE_IMAGE);
+        } else if (id == R.id.action_upload_video) {
+            IntentUtils.pickupVideo(this, REQUEST_CODE_CHOOSE_IMAGE);
+        } else if (id == R.id.action_download) {
+            download(genLocalPath(), curRemoteFile);
+        } else if (id == R.id.action_clear) {
             tvResult.setText("CLEARED");
+        } else if (id == R.id.action_create_folder) {
+            showCreateDialog();
+        } else if (id == R.id.action_delete_file) {
+            showDeleteDialog(curRemoteFile);
+        } else if (id == R.id.action_delete_folder) {
+            showDeleteDialog(curRemoteFolder);
         }
+        return super.onOptionsItemSelected(item);
     }
 
+    private void showCreateDialog() {
+        editText = DialogUtil.showInput(this, "Please input folder name", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which != DialogInterface.BUTTON_POSITIVE) {
+                    return;
+                }
+                createFolder(editText.getText().toString());
+            }
+        });
+    }
+
+    private void showDeleteDialog(final String path) {
+        if (TextUtils.isEmpty(path)) {
+            Toast.makeText(this, "INVALID FILE/FOLDER", Toast.LENGTH_LONG).show();
+            return;
+        }
+        DialogUtil.showConfirmDialog(//
+                this,//
+                new StringBuilder("Confirm to Delete \n\"").append(path).append("\"?").toString(), //
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which != DialogInterface.BUTTON_POSITIVE) {
+                            return;
+                        }
+                        delele(path);
+                    }
+                });
+    }
+
+    /* * handler Spinner****/
     private void initSpinner() {
         mSpinner = (Spinner) findViewById(R.id.spinner);
         adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
@@ -137,27 +146,23 @@ public class SambaActivity extends ActionBarActivity implements View.OnClickList
                 }
 
         );
-
-        loadToSpinner(SambaUtil.getRemotePath("/")
-
-        );
+        curRemoteFolder = SambaUtil.getRemotePath("/");
+        loadToSpinner(curRemoteFolder);
     }
 
     private void onFileSelected(String name) {
         Log.d(TAG, "onFileSelected  curRemoteFolder=" + curRemoteFolder + " name=\"" + name + "\"    isAutoSelected=" + isAutoSelected);
         if (isAutoSelected) {
-            tvCurrent.setText("/");
             isAutoSelected = false;
             return;
         }
-//                boolean isRoot = curRemoteFolder.replace("smb://" + mConfig.host + "/", "").trim().split("/").length <= 1;
         if (name.equals(REMOTE_PARENT)) {
             if (curRemoteFolder != null) {
             }
             return;
         }
         SmbFile file = REMOTE_PATHS.get(name);
-        tvCurrent.setText(file.getName());
+        tvSelectedFile.setText(file.getName());
         if (name.startsWith(REMOTE_FOLDER_PREFIX)) {
             curRemoteFolder = file.getPath();
             loadToSpinner(curRemoteFolder);
@@ -165,7 +170,9 @@ public class SambaActivity extends ActionBarActivity implements View.OnClickList
             curRemoteFile = file.getPath();
             curRemoteFolder = file.getParent();
         }
+        updateSelected();
     }
+
 
     private void loadToSpinner(final String path) {
         Log.d(TAG, "loadToSpinner    " + path);
@@ -187,85 +194,24 @@ public class SambaActivity extends ActionBarActivity implements View.OnClickList
         }).start();
     }
 
-    private void listAndPrepare(String path) {
-        List<SmbFile> FILES = SambaUtil.listFiles(mConfig, path);
-        Map<String, SmbFile> MAP = listToMap(FILES);
-        prepareCurrentMap(MAP);
-    }
-
-    private void prepareCurrentMap(Map<String, SmbFile> map) {
-        if (map == null || map.isEmpty()) {
-            return;
-        }
-        synchronized (REMOTE_PATHS) {
-            REMOTE_PATHS.clear();
-            REMOTE_PATHS.put(REMOTE_PARENT, EMPTY_REMOTE_FILE);
-            REMOTE_PATHS.putAll(map);
-        }
-    }
-
-    private Map<String, SmbFile> listToMap(List<SmbFile> files) {
-        if (files == null || files.isEmpty()) {
-            return null;
-        }
-        Map<String, SmbFile> FILE = new LinkedHashMap<>();
-        Map<String, SmbFile> FOLDER = new LinkedHashMap<>();
-        for (SmbFile file : files) {
-            try {
-                String path = file.getPath();
-                path = path.replace("smb://" + mConfig.host, "");
-                if (file.isDirectory()) {
-                    FOLDER.put(new StringBuilder(REMOTE_FOLDER_PREFIX).append(path).toString(), file);
-                } else {
-                    FILE.put(new StringBuilder(REMOTE_FILE_PREFIX).append(path).toString(), file);
-                }
-            } catch (SmbException e) {
-                e.printStackTrace();
-                FILE.put("  | " + file.getPath(), file);
-            }
-        }
-        FOLDER.putAll(FILE);
-        return FOLDER;
-    }
-
-    /**
-     * *************ACTIONS***************
-     */
-    private final void upload(final String path) {
-        new Thread() {
-            @Override
-            public void run() {
-                boolean result = SambaUtil.upload(mConfig, path, "/samba/0upload/");
-                updateResult("upload", path + " " + String.valueOf(result).toUpperCase());
-            }
-        }.start();///folder
-    }
-
-    private final void download(final String localPath, final String remotePath) {
-        Log.d(TAG, "download      " + localPath);
-        new Thread() {
-            @Override
-            public void run() {
-                boolean result = SambaUtil.download(mConfig, localPath, remotePath);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
-                updateResult("download", localPath + " " + String.valueOf(result).toUpperCase());
-            }
-        }.start();///folder
-    }
-
-    private final void list() {
-        curRemoteFolder = SambaUtil.getRemotePath("/");
+    @Override
+    protected void list() {
+        super.list();
         loadToSpinner(curRemoteFolder);
     }
 
 
-    private void updateResult(final String action, final String msg) {
+    private void updateSelected() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tvResult.append("\n");
-                tvResult.append("=========" + String.valueOf(action).toUpperCase() + "========");
-                tvResult.append("\n");
-                tvResult.append(msg);
+                tvSelectedFile.setText("FOLDER:");
+                tvSelectedFile.append("\n");
+                tvSelectedFile.append(String.valueOf(curRemoteFolder));
+                tvSelectedFile.append("\n");
+                tvSelectedFile.append("FILE:");
+                tvSelectedFile.append("\n");
+                tvSelectedFile.append(String.valueOf(curRemoteFile));
             }
         });
     }

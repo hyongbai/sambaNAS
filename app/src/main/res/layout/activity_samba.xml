@@ -11,68 +11,29 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tv_selected" />
+        android:id="@+id/tv_selected_file" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ROOT"
-            android:id="@+id/btn_list"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"/>
 
         <Spinner
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:id="@+id/spinner"
-            android:layout_gravity="center_horizontal"
             android:spinnerMode="dropdown" />
 
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="upload"
-            android:id="@+id/btn_upload" />
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Download"
-            android:id="@+id/btn_down" />
     </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Clear"
-            android:id="@+id/btn_clear"
-            android:layout_alignParentBottom="true" />
-
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@id/btn_clear">
+            android:layout_height="match_parent">
 
             <TextView
                 android:layout_width="match_parent"

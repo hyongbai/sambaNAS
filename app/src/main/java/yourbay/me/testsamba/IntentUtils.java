@@ -41,6 +41,22 @@ public class IntentUtils {
         return available;
     }
 
+    public final static boolean pickupVideo(Activity activity, int requestCode) {
+        if (activity == null) {
+            return false;
+        }
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        // Uri uri = MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+        // intent.setDataAndType(uri, "image/*");
+        intent.setType("video/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        boolean available = isIntentAvailable(activity, intent);
+        if (available) {
+            activity.startActivityForResult(intent, requestCode);
+        }
+        return available;
+    }
+
     /**
      * <pre>
      * If u r using intent to open other app(s) ,such as image/video viewer.
