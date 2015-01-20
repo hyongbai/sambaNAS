@@ -1,6 +1,52 @@
-.gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+*.apk
+*.ap_
+*.dex
+
+local.properties
+
+.classpath
+#.project
+*.jar.properties
+project.properties
+.settings
+
+#temp files
+*.swp
+*~
+*.iws
+*.ipr
+# lint
+lint.xml
+
+#android-app-pack
+auto.prop
+
 .DS_Store
-/build
+
+#annotation
+.factorypath
+
+#androidAnntation
+.apt_generated
+
+# Android Studio
+.idea
+.gradle
+build
+
+
+
+
