@@ -21,7 +21,12 @@ import android.widget.Toast;
 import java.io.File;
 
 import jcifs.smb.SmbFile;
+import yourbay.me.testsamba.samba.Config;
+import yourbay.me.testsamba.samba.OnConfigListener;
 import yourbay.me.testsamba.samba.SambaUtil;
+import yourbay.me.testsamba.util.DialogUtil;
+import yourbay.me.testsamba.util.IntentUtils;
+import yourbay.me.testsamba.util.UriUtil;
 
 
 public class MainActivity extends SambaActivity {
@@ -73,7 +78,9 @@ public class MainActivity extends SambaActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_smb_home) {
+        if (id == R.id.action_change_host) {
+            showAccountDialog();
+        } else if (id == R.id.action_smb_home) {
             list();
         } else if (id == R.id.action_upload) {
             IntentUtils.pickupImages(this, REQUEST_CODE_CHOOSE_IMAGE);
@@ -122,6 +129,18 @@ public class MainActivity extends SambaActivity {
                         delele(path);
                     }
                 });
+    }
+
+    private void showAccountDialog() {
+        DialogUtil.showInputAccoutDialog(//
+                this,//
+                new OnConfigListener() {
+                    @Override
+                    public void onConfig(Config config, Object obj) {
+                        Log.d(TAG, "" + config);
+                    }
+                }
+        );
     }
 
     /* * handler Spinner****/
@@ -234,12 +253,23 @@ public class MainActivity extends SambaActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                String ACTION_STR = String.valueOf(action).toUpperCase();
+                int MAX_LENGTH = 20;
+                int length = ACTION_STR.length();
+                while (length <= MAX_LENGTH) {
+                    ACTION_STR = length % 2 == 0 ? ACTION_STR + " " : " " + ACTION_STR;
+                    length++;
+                }
                 tvResult.append("\n");
-                tvResult.append("=========" + String.valueOf(action).toUpperCase() + "========");
+                tvResult.append("=========" + ACTION_STR + "========");
                 tvResult.append("\n");
                 tvResult.append(msg);
             }
         });
     }
 
+    @Override
+    protected void onFolderChange(String path, boolean result) {
+        loadToSpinner(path);
+    }
 }

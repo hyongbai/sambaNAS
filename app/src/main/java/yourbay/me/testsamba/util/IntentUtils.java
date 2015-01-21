@@ -1,4 +1,4 @@
-package yourbay.me.testsamba;
+package yourbay.me.testsamba.util;
 
 import android.app.Activity;
 import android.content.Context;

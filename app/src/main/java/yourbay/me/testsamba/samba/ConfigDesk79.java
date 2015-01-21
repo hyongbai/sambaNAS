@@ -8,5 +8,6 @@ public class ConfigDesk79 extends Config {
         user = "ram";
         password = "1234";
         host = "192.168.2.79";
+        nickName = "RamSambaTest";
     }
 }

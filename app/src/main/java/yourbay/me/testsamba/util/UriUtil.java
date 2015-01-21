@@ -1,4 +1,4 @@
-package yourbay.me.testsamba;
+package yourbay.me.testsamba.util;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

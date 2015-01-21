@@ -1,7 +1,7 @@
 package yourbay.me.testsamba;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
 import java.util.LinkedHashMap;
@@ -17,7 +17,7 @@ import yourbay.me.testsamba.samba.SambaUtil;
 /**
  * Created by ram on 15/1/20.
  */
-public class SambaActivity extends ActionBarActivity {
+public class SambaActivity extends Activity {
 
     protected final static String TAG = SambaUtil.TAG;
     protected final static String LOCAL_FOLDER_PATH = "/test/samba";
@@ -95,6 +95,7 @@ public class SambaActivity extends ActionBarActivity {
             public void run() {
                 boolean result = SambaUtil.upload(mConfig, path, "/samba/0upload/");
                 updateResult("upload", path + " " + String.valueOf(result).toUpperCase());
+                onFolderChange(path, result);
             }
         }.start();///folder
     }
@@ -115,21 +116,26 @@ public class SambaActivity extends ActionBarActivity {
             @Override
             public void run() {
                 boolean result = SambaUtil.delete(mConfig, path);
+                onFolderChange(path, result);
                 updateResult("DELETE", path + " " + String.valueOf(result).toUpperCase());
             }
         }).start();
+    }
+
+    protected void onFolderChange(String path, boolean result) {
+
     }
 
     protected void list() {
         curRemoteFolder = SambaUtil.getRemotePath("/");
     }
 
-
     protected void createFolder(final String name) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 boolean result = SambaUtil.createFolder(mConfig, curRemoteFolder, name);
+                onFolderChange(curRemoteFolder, result);
                 updateResult("createFolder", SambaUtil.wrapPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
             }
         }).start();
