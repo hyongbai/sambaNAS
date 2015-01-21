@@ -88,7 +88,7 @@ public final class NbtAddress {
 
 /** 
  * This is a special name for querying the master browser that serves the
- * list of hosts found in "Network Neighborhood".
+ * listRoot of hosts found in "Network Neighborhood".
  */ 
 
     public static final String MASTER_BROWSER_NAME = "\u0001\u0002__MSBROWSE__\u0002";
@@ -384,7 +384,7 @@ public final class NbtAddress {
  * names also have a <code>type</code>. Types(aka Hex Codes)
  * are used to distiquish the various services on a host. <a
  * href="../../../nbtcodes.html">Here</a> is
- * a fairly complete list of NetBIOS hex codes. Scope is not used but is
+ * a fairly complete listRoot of NetBIOS hex codes. Scope is not used but is
  * still functional in other NetBIOS products and so for completeness it has been
  * implemented. A <code>scope</code> of <code>null</code> or <code>""</code>
  * signifies no scope.

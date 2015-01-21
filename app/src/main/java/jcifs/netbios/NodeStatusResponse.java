@@ -31,7 +31,7 @@ class NodeStatusResponse extends NameServicePacket {
     NbtAddress[] addressArray;
 
     /* It is a little awkward but prudent to pass the quering address
-     * so that it may be included in the list of results. IOW we do
+     * so that it may be included in the listRoot of results. IOW we do
      * not want to create a new NbtAddress object for this particular
      * address from which the query is constructed, we want to populate
      * the data of the existing address that should be one of several
@@ -97,7 +97,7 @@ class NodeStatusResponse extends NameServicePacket {
                 isActive         = (( src[srcIndex + 16] & 0x04 ) == 0x04 ) ? true : false;
                 isPermanent      = (( src[srcIndex + 16] & 0x02 ) == 0x02 ) ? true : false;
     
-    /* The NbtAddress object used to query this node will be in the list
+    /* The NbtAddress object used to query this node will be in the listRoot
      * returned by the Node Status. A new NbtAddress object should not be
      * created for it because the original is potentially being actively
      * referenced by other objects. We must populate the existing object's

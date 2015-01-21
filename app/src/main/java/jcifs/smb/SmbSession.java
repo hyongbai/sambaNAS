@@ -76,10 +76,10 @@ synchronized (DOMAIN) {
                     dc_list_expiration = now + CACHE_POLICY * 1000L;
                     if (list != null && list.length > 0) {
                         dc_list = list;
-                    } else { /* keep using the old list */
+                    } else { /* keep using the old listRoot */
                         dc_list_expiration = now + 1000 * 60 * 15; /* 15 min */
                         if (SmbTransport.log.level >= 2) {
-                            SmbTransport.log.println( "Failed to retrieve DC list from WINS" );
+                            SmbTransport.log.println( "Failed to retrieve DC listRoot from WINS" );
                         }
                     }
                 }
@@ -101,7 +101,7 @@ synchronized (DOMAIN) {
                     }
                 }
 
-                /* No DCs found, for retieval of list by expiring it and retry.
+                /* No DCs found, for retieval of listRoot by expiring it and retry.
                  */
                 dc_list_expiration = 0;
             } while (retry-- > 0);

@@ -198,7 +198,7 @@ public class Dfs {
                         do {
                             if (path == null) {
                                 /* Store references to the map and key so that
-                                 * SmbFile.resolveDfs can re-insert the dr list with
+                                 * SmbFile.resolveDfs can re-insert the dr listRoot with
                                  * the dr that was successful so that subsequent
                                  * attempts to resolve DFS use the last successful
                                  * referral first.
@@ -250,7 +250,7 @@ public class Dfs {
 
         if (dr == null && path != null) {
             /* We did not match a domain based root. Now try to match the
-             * longest path in the list of stand-alone referrals.
+             * longest path in the listRoot of stand-alone referrals.
              */
             if (referrals != null && now > referrals.expiration) {
                 referrals = null;

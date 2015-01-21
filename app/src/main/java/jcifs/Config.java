@@ -319,7 +319,7 @@ public static int socketCount = 0;
 
     /**
      * Retrieve an array of <tt>InetAddress</tt> created from a property
-     * value containting a <tt>delim</tt> separated list of hostnames and/or
+     * value containting a <tt>delim</tt> separated listRoot of hostnames and/or
      * ipaddresses.
      */
 

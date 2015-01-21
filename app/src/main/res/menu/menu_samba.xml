@@ -1,5 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".SambaActivity">
     <item
@@ -47,10 +46,15 @@
         android:title="Delete folder"
         android:orderInCategory="100"
         android:showAsAction="never" />
+    <item
+        android:id="@+id/action_list_workgroup"
+        android:title="WorkGroups"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
 
     <item
         android:id="@+id/action_clear"
-        android:title="clear"
+        android:title="Clear Result"
         android:orderInCategory="100"
         android:showAsAction="never" />
 

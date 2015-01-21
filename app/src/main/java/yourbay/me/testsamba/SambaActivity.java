@@ -44,7 +44,6 @@ public class SambaActivity extends Activity {
         }
     }
 
-
     protected void listAndPrepare(String path) {
         List<SmbFile> FILES = SambaUtil.listFiles(mConfig, path);
         Map<String, SmbFile> MAP = SmbFileToMap(FILES);
@@ -123,11 +122,32 @@ public class SambaActivity extends Activity {
     }
 
     protected void onFolderChange(String path, boolean result) {
+        //TODO by child
+    }
+
+    protected void listWorkGroup() {
+        new Thread() {
+            @Override
+            public void run() {
+//              SmbFile[] files = SambaUtil.listWorkGroup();
+                final String[] paths = SambaUtil.listWorkGroupPath();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onListWorkgroup(paths);
+                    }
+                });
+                updateResult("listWorkGroup", SambaUtil.strsToString(paths));
+            }
+        }.start();
+    }
+
+    protected void onListWorkgroup(String[] paths) {
 
     }
 
-    protected void list() {
-        curRemoteFolder = SambaUtil.getRemotePath("/");
+    protected void listRoot() {
+        curRemoteFolder = SambaUtil.getRemotePath(mConfig, "/");
     }
 
     protected void createFolder(final String name) {

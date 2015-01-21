@@ -1,5 +1,7 @@
 package yourbay.me.testsamba.samba;
 
+import android.text.TextUtils;
+
 /**
  * Created by ram on 15/1/19.
  */
@@ -22,4 +24,19 @@ public class Config {
         builder.append(nickName);
         return builder.toString();
     }
+
+    public void updateHost(String newHost, boolean isWorkGroup) {
+        if (TextUtils.isEmpty(newHost)) {
+            return;
+        }
+        while (newHost.startsWith("/")) {
+            newHost = newHost.substring(1);
+        }
+        while (newHost.endsWith("/")) {
+            newHost = newHost.substring(0, newHost.length() - 1);
+        }
+        StringBuilder builder = new StringBuilder(newHost);
+        this.host = isWorkGroup ? builder.append("/").toString() : builder.toString();
+    }
+
 }

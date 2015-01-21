@@ -112,15 +112,15 @@ import java.util.Date;
  * <tr><td width="20%"><code>smb://angus/</code></td><td>
  * This references only a server. The behavior of some methods is different
  * in this context(e.g. you cannot <code>delete</code> a server) however
- * as you might expect the <code>list</code> method will list the available
+ * as you might expect the <code>listRoot</code> method will listRoot the available
  * shares on this server.
  * </td></tr>
  * 
  * <tr><td width="20%"><code>smb://myworkgroup/</code></td><td>
  * This syntactically is identical to the above example. However if
  * <code>myworkgroup</code> happends to be a workgroup(which is indeed
- * suggested by the name) the <code>list</code> method will return
- * a list of servers that have registered themselves as members of
+ * suggested by the name) the <code>listRoot</code> method will return
+ * a listRoot of servers that have registered themselves as members of
  * <code>myworkgroup</code>.
  * </td></tr>
  * 
@@ -165,7 +165,7 @@ import java.util.Date;
  * the <code>SERVER</code> parameter is used to override the
  * server name service lookup to contact the server 192.168.10.15
  * (presumably known to be a master
- * browser) for the server list in workgroup <code>MYGROUP</code>.
+ * browser) for the server listRoot in workgroup <code>MYGROUP</code>.
  * </td></tr>
  *
  * </table>
@@ -1585,7 +1585,7 @@ if (this instanceof SmbNamedPipe) {
         return 0L;
     }
 /**
- * List the contents of this SMB resource. The list returned by this
+ * List the contents of this SMB resource. The listRoot returned by this
  * method will be;
  *
  * <ul>
@@ -1610,8 +1610,8 @@ if (this instanceof SmbNamedPipe) {
     }
 
 /**
- * List the contents of this SMB resource. The list returned will be
- * identical to the list returned by the parameterless <code>list()</code>
+ * List the contents of this SMB resource. The listRoot returned will be
+ * identical to the listRoot returned by the parameterless <code>listRoot()</code>
  * method minus filenames filtered by the specified filter.
  *
  * @param filter a filename filter to exclude filenames from the results
@@ -1625,10 +1625,10 @@ if (this instanceof SmbNamedPipe) {
 /**
  * List the contents of this SMB resource as an array of
  * <code>SmbFile</code> objects. This method is much more efficient than
- * the regular <code>list</code> method when querying attributes of each
+ * the regular <code>listRoot</code> method when querying attributes of each
  * file in the result set.
  * <p>
- * The list of <code>SmbFile</code>s returned by this method will be;
+ * The listRoot of <code>SmbFile</code>s returned by this method will be;
  *
  * <ul>
  * <li> files and directories contained within this resource if the
@@ -1684,8 +1684,8 @@ if (this instanceof SmbNamedPipe) {
         return listFiles( wildcard, ATTR_DIRECTORY | ATTR_HIDDEN | ATTR_SYSTEM, null, null );
     }
 /**
- * List the contents of this SMB resource. The list returned will be
- * identical to the list returned by the parameterless <code>listFiles()</code>
+ * List the contents of this SMB resource. The listRoot returned will be
+ * identical to the listRoot returned by the parameterless <code>listFiles()</code>
  * method minus files filtered by the specified filename filter.
  *
  * @param filter a filter to exclude files from the results
@@ -1696,8 +1696,8 @@ if (this instanceof SmbNamedPipe) {
         return listFiles( "*", ATTR_DIRECTORY | ATTR_HIDDEN | ATTR_SYSTEM, filter, null );
     }
 /**
- * List the contents of this SMB resource. The list returned will be
- * identical to the list returned by the parameterless <code>listFiles()</code>
+ * List the contents of this SMB resource. The listRoot returned will be
+ * identical to the listRoot returned by the parameterless <code>listFiles()</code>
  * method minus filenames filtered by the specified filter.
  *
  * @param filter a file filter to exclude files from the results
@@ -1764,13 +1764,13 @@ if (this instanceof SmbNamedPipe) {
         if (p.lastIndexOf('/') != (p.length() - 1))
             throw new SmbException(url.toString() + " directory must end with '/'");
         if (getType() != TYPE_SERVER)
-            throw new SmbException("The requested list operations is invalid: " + url.toString());
+            throw new SmbException("The requested listRoot operations is invalid: " + url.toString());
 
         map = new HashMap();
 
         if (dfs.isTrustedDomain(getServer(), auth)) {
             /* The server name is actually the name of a trusted
-             * domain. Add DFS roots to the list.
+             * domain. Add DFS roots to the listRoot.
              */
             try {
                 entries = doDfsRootEnum();
@@ -1865,7 +1865,7 @@ if (this instanceof SmbNamedPipe) {
 
         rpc = new MsrpcShareEnum(url.getHost());
 
-        /* JCIFS will build a composite list of shares if the target host has
+        /* JCIFS will build a composite listRoot of shares if the target host has
          * multiple IP addresses such as when domain-based DFS is in play. Because
          * of this, to ensure that we query each IP individually without re-resolving
          * the hostname and getting a different IP, we must use the current addresses
@@ -1922,7 +1922,7 @@ if (this instanceof SmbNamedPipe) {
             req = new NetServerEnum2(url.getHost(), NetServerEnum2.SV_TYPE_ALL);
             resp = new NetServerEnum2Response();
         } else {
-            throw new SmbException( "The requested list operations is invalid: " + url.toString() );
+            throw new SmbException( "The requested listRoot operations is invalid: " + url.toString() );
         }
 
         boolean more;

@@ -8,25 +8,32 @@
     tools:context=".SambaActivity"
     android:orientation="vertical">
 
+    <!-- for selecting WORKGROUP -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_selected_workgroup" />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sp_workgroup"
+        android:spinnerMode="dropdown" />
+
+    <!-- for selecting file/folder -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tv_selected_file" />
 
-    <LinearLayout
+    <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:id="@+id/sp_file"
+        android:spinnerMode="dropdown" />
 
-        <Spinner
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:id="@+id/spinner"
-            android:spinnerMode="dropdown" />
 
-    </LinearLayout>
-
+    <!-- for show result LOGS -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

@@ -30,14 +30,16 @@ import yourbay.me.testsamba.util.UriUtil;
 
 
 public class MainActivity extends SambaActivity {
-
     //    private final static String TAG = "MainActivity";
-    private Spinner mSpinner;
+    private Spinner fileSpinner;
+    private Spinner wgSpinner;
     private TextView tvResult;
     private TextView tvSelectedFile;
+    private TextView tvSelectedWG;
     private EditText editText;
 
-    protected ArrayAdapter<String> adapter;
+    protected ArrayAdapter<String> fileAdapter;
+    protected ArrayAdapter<String> wgAdapter;
 
     protected boolean isAutoSelected = false;
 
@@ -47,6 +49,7 @@ public class MainActivity extends SambaActivity {
         setContentView(R.layout.activity_samba);
         tvResult = (TextView) findViewById(R.id.tv_result);
         tvSelectedFile = (TextView) findViewById(R.id.tv_selected_file);
+        tvSelectedWG = (TextView) findViewById(R.id.tv_selected_workgroup);
         initSpinner();
     }
 
@@ -81,7 +84,7 @@ public class MainActivity extends SambaActivity {
         if (id == R.id.action_change_host) {
             showAccountDialog();
         } else if (id == R.id.action_smb_home) {
-            list();
+            listRoot();
         } else if (id == R.id.action_upload) {
             IntentUtils.pickupImages(this, REQUEST_CODE_CHOOSE_IMAGE);
         } else if (id == R.id.action_upload_video) {
@@ -96,6 +99,8 @@ public class MainActivity extends SambaActivity {
             showDeleteDialog(curRemoteFile);
         } else if (id == R.id.action_delete_folder) {
             showDeleteDialog(curRemoteFolder);
+        } else if (id == R.id.action_list_workgroup) {
+            listWorkGroup();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -145,28 +150,54 @@ public class MainActivity extends SambaActivity {
 
     /* * handler Spinner****/
     private void initSpinner() {
-        mSpinner = (Spinner) findViewById(R.id.spinner);
-        adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinner.setAdapter(adapter);
-
-        mSpinner.setOnItemSelectedListener(//
+        //------------
+        wgSpinner = (Spinner) findViewById(R.id.sp_workgroup);
+        wgAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
+        wgAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        wgSpinner.setAdapter(wgAdapter);
+        wgSpinner.setOnItemSelectedListener(//
                 new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        String name = adapter.getItem(position);
+                        String host = wgAdapter.getItem(position);
+                        Log.d(TAG, "wgSpinner onItemSelected  " + host);
+                        if (TextUtils.isEmpty(host)) {
+                            return;
+                        }
+                        mConfig.updateHost(host, true);
+                        Log.d(TAG, "wgSpinner onItemSelected  " + mConfig);
+                        listRoot();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                        Log.d(TAG, "wgSpinner   onNothingSelected  curRemoteFolder=" + curRemoteFolder + "    isAutoSelected=" + isAutoSelected);
+                    }
+                }
+        );
+        listWorkGroup();
+
+        //------------
+        fileSpinner = (Spinner) findViewById(R.id.sp_file);
+        fileAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item);
+        fileAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        fileSpinner.setAdapter(fileAdapter);
+        fileSpinner.setOnItemSelectedListener(//
+                new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String name = fileAdapter.getItem(position);
                         onFileSelected(name);
                     }
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-                        Log.d(TAG, "onNothingSelected  curRemoteFolder=" + curRemoteFolder + "    isAutoSelected=" + isAutoSelected);
+                        Log.d(TAG, "fileAdapter onNothingSelected  curRemoteFolder=" + curRemoteFolder + "    isAutoSelected=" + isAutoSelected);
                     }
                 }
-
         );
-        curRemoteFolder = SambaUtil.getRemotePath("/");
-        loadToSpinner(curRemoteFolder);
+//        curRemoteFolder = SambaUtil.getRemotePath(mConfig, "/");
+//        loadToSpinner(curRemoteFolder);
     }
 
     private void onFileSelected(String name) {
@@ -202,11 +233,11 @@ public class MainActivity extends SambaActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        adapter.clear();
-                        adapter.addAll(REMOTE_PATHS.keySet());
-                        adapter.notifyDataSetChanged();
+                        fileAdapter.clear();
+                        fileAdapter.addAll(REMOTE_PATHS.keySet());
+                        fileAdapter.notifyDataSetChanged();
                         isAutoSelected = true;
-                        mSpinner.setSelection(0);
+                        fileSpinner.setSelection(0);
                     }
                 });
             }
@@ -214,8 +245,8 @@ public class MainActivity extends SambaActivity {
     }
 
     @Override
-    protected void list() {
-        super.list();
+    protected void listRoot() {
+        super.listRoot();
         loadToSpinner(curRemoteFolder);
     }
 
@@ -254,16 +285,18 @@ public class MainActivity extends SambaActivity {
             @Override
             public void run() {
                 String ACTION_STR = String.valueOf(action).toUpperCase();
-                int MAX_LENGTH = 20;
+                int MAX_LENGTH = 30;
                 int length = ACTION_STR.length();
                 while (length <= MAX_LENGTH) {
                     ACTION_STR = length % 2 == 0 ? ACTION_STR + " " : " " + ACTION_STR;
                     length++;
                 }
-                tvResult.append("\n");
-                tvResult.append("=========" + ACTION_STR + "========");
-                tvResult.append("\n");
-                tvResult.append(msg);
+                StringBuilder builder = new StringBuilder("\n");
+                builder.append("=========" + ACTION_STR + "========");
+                builder.append("\n");
+                builder.append(msg);
+                tvResult.append(builder);
+                Log.d(TAG, "updateResult    " + builder);
             }
         });
     }
@@ -271,5 +304,37 @@ public class MainActivity extends SambaActivity {
     @Override
     protected void onFolderChange(String path, boolean result) {
         loadToSpinner(path);
+    }
+
+    @Override
+    protected void onListWorkgroup(String[] paths) {
+        wgAdapter.clear();
+        wgAdapter.addAll(paths);
+        wgAdapter.notifyDataSetChanged();
+        wgSpinner.setSelection(0);
+    }
+
+    protected void updateHost(String newHost) {
+        if (TextUtils.isEmpty(newHost)) {
+            return;
+        }
+        String host = getSmbHost(curRemoteFolder);
+
+    }
+
+    private String getSmbHost(String path) {
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
+        String PREFIX = "smb://";
+        if (!path.startsWith(PREFIX)) {
+            return null;
+        }
+        String p = path.substring(PREFIX.length());
+        if (!p.contains("/")) {
+            return p;
+        }
+        int index = p.indexOf("/");
+        return p.subSequence(0, index).toString();
     }
 }
