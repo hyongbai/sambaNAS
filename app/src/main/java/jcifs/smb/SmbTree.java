@@ -18,11 +18,7 @@
 
 package jcifs.smb;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-import jcifs.UniAddress;
-import jcifs.netbios.NbtAddress;
-import jcifs.Config;
+//import jcifs.netbios.NbtAddress;
 
 class SmbTree {
 

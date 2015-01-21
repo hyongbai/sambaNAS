@@ -20,22 +20,15 @@
 package jcifs.ntlmssp;
 
 import java.io.IOException;
-
-import java.net.UnknownHostException;
-
 import java.security.SecureRandom;
 
 import jcifs.Config;
-
-import jcifs.netbios.NbtAddress;
-
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.util.HMACT64;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.GeneralSecurityException;
 import jcifs.util.MD4;
 import jcifs.util.RC4;
+
+//import jcifs.netbios.NbtAddress;
 
 /**
  * Represents an NTLMSSP Type-3 message.
@@ -80,9 +73,9 @@ public class Type3Message extends NtlmMessage {
         DEFAULT_PASSWORD = Config.getProperty("jcifs.smb.client.password",
                 null);
         String defaultWorkstation = null;
-        try {
-            defaultWorkstation = NbtAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ex) { }
+//        try {n
+//            defaultWorkstation = NbtAddress.getLocalHost().getHostName();
+//        } catch (UnknownHostException ex) { }
         DEFAULT_WORKSTATION = defaultWorkstation;
         LM_COMPATIBILITY = Config.getInt("jcifs.smb.lmCompatibility", 3);
     }

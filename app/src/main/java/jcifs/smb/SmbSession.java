@@ -18,15 +18,16 @@
 
 package jcifs.smb;
 
-import java.util.Vector;
-import java.util.Enumeration;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Vector;
+
 import jcifs.Config;
 import jcifs.UniAddress;
-import jcifs.netbios.NbtAddress;
-import jcifs.util.MD4;
+
+//import jcifs.netbios.NbtAddress;
 
 public final class SmbSession {
 
@@ -41,26 +42,26 @@ public final class SmbSession {
     private static final int CACHE_POLICY =
                 Config.getInt( "jcifs.netbios.cachePolicy", 60 * 10 ) * 60; /* 10 hours */
 
-    static NbtAddress[] dc_list = null;
+//    static NbtAddress[] dc_list = null;
     static long dc_list_expiration;
     static int dc_list_counter;
 
-    private static NtlmChallenge interrogate( NbtAddress addr ) throws SmbException {
-        UniAddress dc = new UniAddress( addr );
-        SmbTransport trans = SmbTransport.getSmbTransport( dc, 0 );
-        if (USERNAME == null) {
-            trans.connect();
-            if (SmbTransport.log.level >= 3)
-                SmbTransport.log.println(
-                    "Default credentials (jcifs.smb.client.username/password)" +
-                    " not specified. SMB signing may not work propertly." +
-                    "  Skipping DC interrogation." );
-        } else {
-            SmbSession ssn = trans.getSmbSession( NtlmPasswordAuthentication.DEFAULT );
-            ssn.getSmbTree( LOGON_SHARE, null ).treeConnect( null, null );
-        }
-        return new NtlmChallenge( trans.server.encryptionKey, dc );
-    }
+//    private static NtlmChallenge interrogate( NbtAddress addr ) throws SmbException {
+//        UniAddress dc = new UniAddress( addr );
+//        SmbTransport trans = SmbTransport.getSmbTransport( dc, 0 );
+//        if (USERNAME == null) {
+//            trans.connect();
+//            if (SmbTransport.log.level >= 3)
+//                SmbTransport.log.println(
+//                    "Default credentials (jcifs.smb.client.username/password)" +
+//                    " not specified. SMB signing may not work propertly." +
+//                    "  Skipping DC interrogation." );
+//        } else {
+//            SmbSession ssn = trans.getSmbSession( NtlmPasswordAuthentication.DEFAULT );
+//            ssn.getSmbTree( LOGON_SHARE, null ).treeConnect( null, null );
+//        }
+//        return new NtlmChallenge( trans.server.encryptionKey, dc );
+//    }
     public static NtlmChallenge getChallengeForDomain()
                 throws SmbException, UnknownHostException {
         if( DOMAIN == null ) {
@@ -72,34 +73,34 @@ synchronized (DOMAIN) {
 
             do {
                 if (dc_list_expiration < now) {
-                    NbtAddress[] list = NbtAddress.getAllByName( DOMAIN, 0x1C, null, null );
+//                    NbtAddress[] list = NbtAddress.getAllByName( DOMAIN, 0x1C, null, null );
                     dc_list_expiration = now + CACHE_POLICY * 1000L;
-                    if (list != null && list.length > 0) {
-                        dc_list = list;
-                    } else { /* keep using the old listRoot */
+//                    if (list != null && list.length > 0) {
+//                        dc_list = list;
+//                    } else { /* keep using the old listRoot */
                         dc_list_expiration = now + 1000 * 60 * 15; /* 15 min */
                         if (SmbTransport.log.level >= 2) {
                             SmbTransport.log.println( "Failed to retrieve DC listRoot from WINS" );
                         }
-                    }
+//                    }
                 }
 
-                int max = Math.min( dc_list.length, LOOKUP_RESP_LIMIT );
-                for (int j = 0; j < max; j++) {
-                    int i = dc_list_counter++ % max;
-                    if (dc_list[i] != null) {
-                        try {
-                            return interrogate( dc_list[i] );
-                        } catch (SmbException se) {
-                            if (SmbTransport.log.level >= 2) {
-                                SmbTransport.log.println( "Failed validate DC: " + dc_list[i] );
-                                if (SmbTransport.log.level > 2)
-                                    se.printStackTrace( SmbTransport.log );
-                            }
-                        }
-                        dc_list[i] = null;
-                    }
-                }
+//                int max = Math.min( dc_list.length, LOOKUP_RESP_LIMIT );
+//                for (int j = 0; j < max; j++) {
+//                    int i = dc_list_counter++ % max;
+//                    if (dc_list[i] != null) {
+//                        try {
+//                            return interrogate( dc_list[i] );
+//                        } catch (SmbException se) {
+//                            if (SmbTransport.log.level >= 2) {
+//                                SmbTransport.log.println( "Failed validate DC: " + dc_list[i] );
+//                                if (SmbTransport.log.level > 2)
+//                                    se.printStackTrace( SmbTransport.log );
+//                            }
+//                        }
+//                        dc_list[i] = null;
+//                    }
+//                }
 
                 /* No DCs found, for retieval of listRoot by expiring it and retry.
                  */
