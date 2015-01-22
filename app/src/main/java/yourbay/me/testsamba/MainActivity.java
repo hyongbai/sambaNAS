@@ -21,7 +21,7 @@ import android.widget.Toast;
 import java.io.File;
 
 import jcifs.smb.SmbFile;
-import yourbay.me.testsamba.samba.Config;
+import yourbay.me.testsamba.samba.IConfig;
 import yourbay.me.testsamba.samba.OnConfigListener;
 import yourbay.me.testsamba.samba.SambaUtil;
 import yourbay.me.testsamba.util.DialogUtil;
@@ -82,7 +82,7 @@ public class MainActivity extends SambaActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_change_host) {
-            showAccountDialog();
+//            showAccountDialog();
         } else if (id == R.id.action_smb_home) {
             listRoot();
         } else if (id == R.id.action_upload) {
@@ -142,7 +142,7 @@ public class MainActivity extends SambaActivity {
                 this,//
                 new OnConfigListener() {
                     @Override
-                    public void onConfig(Config config, Object obj) {
+                    public void onConfig(IConfig config, Object obj) {
                         Log.d(TAG, "" + config);
                     }
                 }

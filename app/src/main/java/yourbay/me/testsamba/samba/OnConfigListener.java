@@ -5,6 +5,6 @@ package yourbay.me.testsamba.samba;
  */
 public interface OnConfigListener {
 
-    public void onConfig(Config config, Object obj);
+    public void onConfig(IConfig config, Object obj);
 
 }

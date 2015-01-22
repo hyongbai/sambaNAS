@@ -10,7 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import yourbay.me.testsamba.samba.Config;
-import yourbay.me.testsamba.samba.ConfigManual;
+import yourbay.me.testsamba.samba.IConfig;
 import yourbay.me.testsamba.samba.OnConfigListener;
 
 /**
@@ -91,7 +91,7 @@ public class DialogUtil {
                     Toast.makeText(context, "User and password must be both inputed or both EMPTY", Toast.LENGTH_LONG).show();
                     return;
                 }
-                Config config = new ConfigManual(host, user, password, etNick.getText().toString());
+                IConfig config = new Config(host, user, password, etNick.getText().toString());
                 listener.onConfig(config, dialog);
             }
         };

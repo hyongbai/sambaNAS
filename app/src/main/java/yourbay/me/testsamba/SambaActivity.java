@@ -11,7 +11,7 @@ import java.util.Map;
 
 import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
-import yourbay.me.testsamba.samba.Config;
+import yourbay.me.testsamba.samba.IConfig;
 import yourbay.me.testsamba.samba.SambaUtil;
 
 /**
@@ -28,7 +28,7 @@ public class SambaActivity extends Activity {
     protected final static int REQUEST_CODE_CHOOSE_VIDEO = 1235;
     protected SmbFile EMPTY_REMOTE_FILE;
 
-    protected Config mConfig;
+    protected IConfig mConfig;
     protected Map<String, SmbFile> REMOTE_PATHS = new LinkedHashMap<>();
     protected String curRemoteFolder;
     protected String curRemoteFile;
@@ -36,7 +36,7 @@ public class SambaActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mConfig = new ConfigDesk79();
+        mConfig = new DefaultConfig();
         try {
             EMPTY_REMOTE_FILE = new SmbFile("");
         } catch (Exception e) {

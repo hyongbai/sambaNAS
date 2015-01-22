@@ -28,13 +28,12 @@ public class SambaUtil {
     private final static boolean DEBUG = true;
     public final static String SMB_URL_LAN = "smb://";
     public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
-    public final static String SMB_URL_SMBSERVER = "smb://server/";
 
-    public final static String getRemotePath(Config config, String path) {
+    public final static String getRemotePath(IConfig config, String path) {
         return new StringBuilder("smb://").append(config.host).append(path).toString();//.append(":445")
     }
 
-    public final static List<SmbFile> listFiles(Config config, String fullPath) throws Exception {
+    public final static List<SmbFile> listFiles(IConfig config, String fullPath) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         final String mURL = fullPath;
         if (DEBUG) {
@@ -44,7 +43,7 @@ public class SambaUtil {
         return new ArrayList<>(Arrays.asList(file.listFiles()));
     }
 
-    public final static boolean upload(Config config, String localPath, String remoteFolder) throws Exception {
+    public final static boolean upload(IConfig config, String localPath, String remoteFolder) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
         String mURL = new StringBuilder("smb://").append(config.host).append(remoteFolder).append(localFile.getName()).toString();
@@ -67,11 +66,11 @@ public class SambaUtil {
         return false;
     }
 
-    public final static boolean download(Config config, String localPath, String mURL) throws Exception {
+    public final static boolean download(IConfig config, String localPath, String mURL) throws Exception {
         return download(config, localPath, mURL, -1);
     }
 
-    public final static boolean download(Config config, String localPath, String mURL, long size) throws Exception {
+    public final static boolean download(IConfig config, String localPath, String mURL, long size) throws Exception {
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "download      URL=" + mURL + "   " + localPath);
         }
@@ -124,7 +123,7 @@ public class SambaUtil {
         }
     }
 
-    public final static boolean createFolder(Config config, String parent, String name) throws Exception {
+    public final static boolean createFolder(IConfig config, String parent, String name) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         String mURL = wrapPath(parent, name);
         if (DEBUG) {
@@ -139,7 +138,7 @@ public class SambaUtil {
     }
 
 
-    public final static boolean delete(Config config, String path) throws Exception {
+    public final static boolean delete(IConfig config, String path) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "delete      URL=" + path);
@@ -192,7 +191,7 @@ public class SambaUtil {
         if (DEBUG) {
             Log.d(TAG, "listServerPath");
         }
-        SmbFile f = new SmbFile(SMB_URL_SMBSERVER);
+        SmbFile f = new SmbFile(SMB_URL_LAN);
         SmbFile[] files = f.listFiles();
         if (DEBUG) {
             Log.d(TAG, "listServerPath   " + Arrays.toString(f.list()));
