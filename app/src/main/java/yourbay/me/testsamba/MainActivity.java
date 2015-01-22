@@ -261,9 +261,10 @@ public class MainActivity extends SambaActivity {
                 tvSelectedFile.append("     ");
                 tvSelectedFile.append(String.valueOf(curRemoteFolder));
                 tvSelectedFile.append("\n");
+
                 tvSelectedFile.append("FILE:\n");
                 tvSelectedFile.append("     ");
-                tvSelectedFile.append(String.valueOf(curRemoteFile));
+                tvSelectedFile.append(curRemoteFile == null ? "NONE FILE SELECTED!" : curRemoteFile);
             }
         });
     }
@@ -287,14 +288,15 @@ public class MainActivity extends SambaActivity {
             @Override
             public void run() {
                 String ACTION_STR = String.valueOf(action).toUpperCase();
-                int MAX_LENGTH = 30;
+                int MAX_LENGTH = 35;
                 int length = ACTION_STR.length();
+                final String DIVIDER = "=";
                 while (length <= MAX_LENGTH) {
-                    ACTION_STR = length % 2 == 0 ? ACTION_STR + " " : " " + ACTION_STR;
+                    ACTION_STR = length % 2 == 0 ? ACTION_STR + DIVIDER : DIVIDER + ACTION_STR;
                     length++;
                 }
                 StringBuilder builder = new StringBuilder("\n");
-                builder.append("=========" + ACTION_STR + "========");
+                builder.append(ACTION_STR);
                 builder.append("\n");
                 builder.append(msg);
                 tvResult.append(builder);

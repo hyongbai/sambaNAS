@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
 import yourbay.me.testsamba.samba.Config;
 import yourbay.me.testsamba.samba.SambaUtil;
@@ -159,7 +161,7 @@ public class SambaActivity extends Activity {
                         onListWorkgroup(ps);
                     }
                 });
-                updateResult("listWorkGroup", SambaUtil.strsToString(paths));
+                updateResult("listWorkGroup", Arrays.toString(paths));
             }
         }.start();
     }
@@ -220,5 +222,8 @@ public class SambaActivity extends Activity {
      */
     protected void handleException(Exception e) {
         updateResult("ERROR", e.getClass().getSimpleName() + ": \"" + e.getMessage() + "\"");
+        if (e instanceof SmbAuthException) {
+            updateResult("handleException", "AUTH ERROR!!! " + e.getMessage());
+        }
     }
 }

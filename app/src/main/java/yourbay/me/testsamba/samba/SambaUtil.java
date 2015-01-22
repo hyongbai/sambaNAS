@@ -240,7 +240,7 @@ public class SambaUtil {
         if (strs == null) {
             return null;
         }
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(strs.length);
         for (String str : strs) {
             builder.append("\n");
             builder.append("[");
