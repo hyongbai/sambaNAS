@@ -101,6 +101,7 @@ public class MainActivity extends SambaActivity {
             showDeleteDialog(curRemoteFolder);
         } else if (id == R.id.action_list_workgroup) {
             listWorkGroup();
+//            listServer();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -164,9 +165,10 @@ public class MainActivity extends SambaActivity {
                         if (TextUtils.isEmpty(host)) {
                             return;
                         }
-                        mConfig.updateHost(host, true);
+                        mConfig.updateHost(host);
                         Log.d(TAG, "wgSpinner onItemSelected  " + mConfig);
                         listRoot();
+                        tvSelectedWG.setText("Current Host:" + mConfig.host);
                     }
 
                     @Override
@@ -255,12 +257,12 @@ public class MainActivity extends SambaActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tvSelectedFile.setText("FOLDER:");
-                tvSelectedFile.append("\n");
+                tvSelectedFile.setText("FOLDER:\n");
+                tvSelectedFile.append("     ");
                 tvSelectedFile.append(String.valueOf(curRemoteFolder));
                 tvSelectedFile.append("\n");
-                tvSelectedFile.append("FILE:");
-                tvSelectedFile.append("\n");
+                tvSelectedFile.append("FILE:\n");
+                tvSelectedFile.append("     ");
                 tvSelectedFile.append(String.valueOf(curRemoteFile));
             }
         });
@@ -317,27 +319,4 @@ public class MainActivity extends SambaActivity {
         wgSpinner.setSelection(0);
     }
 
-    protected void updateHost(String newHost) {
-        if (TextUtils.isEmpty(newHost)) {
-            return;
-        }
-        String host = getSmbHost(curRemoteFolder);
-
-    }
-
-    private String getSmbHost(String path) {
-        if (TextUtils.isEmpty(path)) {
-            return null;
-        }
-        String PREFIX = "smb://";
-        if (!path.startsWith(PREFIX)) {
-            return null;
-        }
-        String p = path.substring(PREFIX.length());
-        if (!p.contains("/")) {
-            return p;
-        }
-        int index = p.indexOf("/");
-        return p.subSequence(0, index).toString();
-    }
 }

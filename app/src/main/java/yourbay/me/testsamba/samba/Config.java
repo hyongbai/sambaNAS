@@ -11,6 +11,21 @@ public class Config {
     public String password;
     public String nickName;
 
+    public void updateHost(String newHost) {
+        if (TextUtils.isEmpty(newHost)) {
+            return;
+        }
+        while (newHost.startsWith("/")) {
+            newHost = newHost.substring(1);
+        }
+        while (newHost.endsWith("/")) {
+            newHost = newHost.substring(0, newHost.length() - 1);
+        }
+//        StringBuilder builder = new StringBuilder(newHost);
+//        this.host = isWorkGroup ? builder.append("/").toString() : builder.toString();
+        this.host = newHost;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(super.toString());
@@ -24,19 +39,4 @@ public class Config {
         builder.append(nickName);
         return builder.toString();
     }
-
-    public void updateHost(String newHost, boolean isWorkGroup) {
-        if (TextUtils.isEmpty(newHost)) {
-            return;
-        }
-        while (newHost.startsWith("/")) {
-            newHost = newHost.substring(1);
-        }
-        while (newHost.endsWith("/")) {
-            newHost = newHost.substring(0, newHost.length() - 1);
-        }
-        StringBuilder builder = new StringBuilder(newHost);
-        this.host = isWorkGroup ? builder.append("/").toString() : builder.toString();
-    }
-
 }

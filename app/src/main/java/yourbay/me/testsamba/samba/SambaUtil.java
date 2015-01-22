@@ -26,34 +26,28 @@ public class SambaUtil {
     public final static String TAG = "SambaUtil";
     public final static int IO_BUFFER_SIZE = 16 * 1024;
     private final static boolean DEBUG = true;
+    public final static String SMB_URL_LAN = "smb://";
+    public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
+    public final static String SMB_URL_SMBSERVER = "smb://server/";
 
     public final static String getRemotePath(Config config, String path) {
         return new StringBuilder("smb://").append(config.host).append(path).toString();//.append(":445")
     }
 
-    public final static List<SmbFile> listFiles(Config config, String remotePath) throws Exception {
+    public final static List<SmbFile> listFiles(Config config, String fullPath) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
-        final String mURL = remotePath;
-//        try {
+        final String mURL = fullPath;
         if (DEBUG) {
             Log.d(TAG, "listFiles   URL=" + mURL + " " + config);
         }
         SmbFile file = new SmbFile(mURL, auth);
-        return new ArrayList<SmbFile>(Arrays.asList(file.listFiles()));
-//        } catch (SmbException smb) {
-//            smb.printStackTrace();
-//        } catch (MalformedURLException murlE) {
-//            murlE.printStackTrace();
-//        } catch (Exception ioE) {
-//            ioE.printStackTrace();
-//        }
+        return new ArrayList<>(Arrays.asList(file.listFiles()));
     }
 
     public final static boolean upload(Config config, String localPath, String remoteFolder) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
         String mURL = new StringBuilder("smb://").append(config.host).append(remoteFolder).append(localFile.getName()).toString();
-//        try {
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "  upload      URL=" + mURL);
         }
@@ -70,13 +64,6 @@ public class SambaUtil {
             outS.flush();
             outS.close();
         }
-//        } catch (SmbException smb) {
-//            smb.printStackTrace();
-//        } catch (MalformedURLException murlE) {
-//            murlE.printStackTrace();
-//        } catch (IOException ioE) {
-//            ioE.printStackTrace();
-//        }
         return false;
     }
 
@@ -90,7 +77,6 @@ public class SambaUtil {
         }
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
-//        try {
         SmbFile remoteFile = new SmbFile(mURL, auth);
         OutputStream outS = new FileOutputStream(localFile);
         SmbFileInputStream inS = new SmbFileInputStream(remoteFile);
@@ -104,13 +90,6 @@ public class SambaUtil {
             outS.flush();
             outS.close();
         }
-//        } catch (SmbException smb) {
-//            smb.printStackTrace();
-//        } catch (MalformedURLException murlE) {
-//            murlE.printStackTrace();
-//        } catch (IOException ioE) {
-//            ioE.printStackTrace();
-//        }
         return false;
     }
 
@@ -146,7 +125,6 @@ public class SambaUtil {
     }
 
     public final static boolean createFolder(Config config, String parent, String name) throws Exception {
-//        try {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         String mURL = wrapPath(parent, name);
         if (DEBUG) {
@@ -157,15 +135,11 @@ public class SambaUtil {
             remoteFile.mkdir();
             return true;
         }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         return false;
     }
 
 
     public final static boolean delete(Config config, String path) throws Exception {
-//        try {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "delete      URL=" + path);
@@ -175,9 +149,6 @@ public class SambaUtil {
             remoteFile.delete();
             return true;
         }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         return false;
     }
 
@@ -187,7 +158,7 @@ public class SambaUtil {
             if (DEBUG) {
                 Log.d(TAG, "listWorkGroup");
             }
-            SmbFile f = new SmbFile("smb://WORKGROUP/");
+            SmbFile f = new SmbFile(SMB_URL_WORKGROUP);
             return f.listFiles();
         } catch (MalformedURLException murlE) {
             murlE.printStackTrace();
@@ -197,24 +168,44 @@ public class SambaUtil {
         return null;
     }
 
-    public final static String[] listWorkGroupPath() {
-        try {
-            if (DEBUG) {
-                Log.d(TAG, "listWorkGroupPath");
-            }
-            SmbFile f = new SmbFile("smb://WORKGROUP/");
-            SmbFile[] files = f.listFiles();
-            List<String> l = new ArrayList<>();
-            for (SmbFile sf : files) {
-                l.add(sf.getName());
-            }
-            return l.toArray(new String[l.size()]);
-        } catch (MalformedURLException murlE) {
-            murlE.printStackTrace();
-        } catch (IOException ioE) {
-            ioE.printStackTrace();
+    public final static String[] listWorkGroupPath() throws Exception {
+        if (DEBUG) {
+            Log.d(TAG, "listWorkGroupPath");
         }
-        return null;
+        SmbFile f = new SmbFile(SMB_URL_WORKGROUP);
+        SmbFile[] files = f.listFiles();
+        if (DEBUG) {
+            Log.d(TAG, "listWorkGroupPath   " + Arrays.toString(f.list()));
+        }
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        List<String> l = new ArrayList<>();
+        for (SmbFile sf : files) {
+            l.add(sf.getName());
+        }
+        String[] wg = l.toArray(new String[l.size()]);
+        return wg;
+    }
+
+    public final static String[] listServerPath() throws Exception {
+        if (DEBUG) {
+            Log.d(TAG, "listServerPath");
+        }
+        SmbFile f = new SmbFile(SMB_URL_SMBSERVER);
+        SmbFile[] files = f.listFiles();
+        if (DEBUG) {
+            Log.d(TAG, "listServerPath   " + Arrays.toString(f.list()));
+        }
+        if (files == null || files.length == 0) {
+            return null;
+        }
+        List<String> l = new ArrayList<>();
+        for (SmbFile sf : files) {
+            l.add(sf.getName());
+        }
+        String[] wg = l.toArray(new String[l.size()]);
+        return wg;
     }
 
     public final static String getFileName(String path) {

@@ -10,7 +10,6 @@ import java.util.Map;
 
 import jcifs.smb.SmbFile;
 import yourbay.me.testsamba.samba.Config;
-import yourbay.me.testsamba.samba.ConfigDesk79;
 import yourbay.me.testsamba.samba.SambaUtil;
 
 /**
@@ -147,12 +146,39 @@ public class SambaActivity extends Activity {
         new Thread() {
             @Override
             public void run() {
-//              SmbFile[] files = SambaUtil.listWorkGroup();
-                final String[] paths = SambaUtil.listWorkGroupPath();
+                String[] paths = null;
+                try {
+                    paths = SambaUtil.listWorkGroupPath();
+                } catch (Exception e) {
+                    handleException(e);
+                }
+                final String[] ps = paths;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        onListWorkgroup(paths);
+                        onListWorkgroup(ps);
+                    }
+                });
+                updateResult("listWorkGroup", SambaUtil.strsToString(paths));
+            }
+        }.start();
+    }
+
+    protected void listServer() {
+        new Thread() {
+            @Override
+            public void run() {
+                String[] paths = null;
+                try {
+                    paths = SambaUtil.listServerPath();
+                } catch (Exception e) {
+                    handleException(e);
+                }
+                final String[] ps = paths;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onListWorkgroup(ps);
                     }
                 });
                 updateResult("listWorkGroup", SambaUtil.strsToString(paths));
@@ -188,7 +214,11 @@ public class SambaActivity extends Activity {
 
     }
 
+    /**
+     * MalformedURLException
+     * SmbException
+     */
     protected void handleException(Exception e) {
-
+        updateResult("ERROR", e.getClass().getSimpleName() + ": \"" + e.getMessage() + "\"");
     }
 }

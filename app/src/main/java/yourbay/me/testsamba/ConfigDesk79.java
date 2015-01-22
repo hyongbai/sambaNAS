@@ -1,4 +1,6 @@
-package yourbay.me.testsamba.samba;
+package yourbay.me.testsamba;
+
+import yourbay.me.testsamba.samba.Config;
 
 /**
  * Created by ram on 15/1/19.
