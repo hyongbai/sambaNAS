@@ -13,11 +13,17 @@ Samba-nas anims to explore remote file(s)/folder(s) in your NAS/samba server.
 # Images
 
 > - **Options**
+> 
 >  ![image](images/options.png)
+>  
 > - **Workgroup** 
+> 
 >  ![image](images/choose-workgroup.png)
+>  
 > - **Choose file/folder**
+> 
 >  ![image](images/choose-file-folder.png)
+>  
 
 
 # Me
