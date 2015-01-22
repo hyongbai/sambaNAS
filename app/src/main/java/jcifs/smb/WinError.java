@@ -55,7 +55,7 @@ public interface WinError {
         "The pipe is being closed.",
         "No process is on the other end of the pipe.",
         "More data is available.",
-        "The listRoot of servers for this workgroup is not currently available.",
+        "The list of servers for this workgroup is not currently available.",
     };
 }
 

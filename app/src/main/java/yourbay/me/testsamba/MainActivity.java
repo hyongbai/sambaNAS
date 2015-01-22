@@ -308,7 +308,7 @@ public class MainActivity extends SambaActivity {
 
     @Override
     protected void onListWorkgroup(String[] paths) {
-        if(paths == null){
+        if (paths == null) {
             return;
         }
         wgAdapter.clear();

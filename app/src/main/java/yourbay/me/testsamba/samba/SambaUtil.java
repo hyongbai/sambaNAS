@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import jcifs.smb.NtlmPasswordAuthentication;
-import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
@@ -32,87 +31,86 @@ public class SambaUtil {
         return new StringBuilder("smb://").append(config.host).append(path).toString();//.append(":445")
     }
 
-    public final static List<SmbFile> listFiles(Config config, String remotePath) {
+    public final static List<SmbFile> listFiles(Config config, String remotePath) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         final String mURL = remotePath;
-        try {
-            if (DEBUG) {
-                Log.d(TAG, "listFiles   URL=" + mURL + " " + config);
-            }
-            SmbFile file = new SmbFile(mURL, auth);
-            return new ArrayList<SmbFile>(Arrays.asList(file.listFiles()));
-        } catch (SmbException smb) {
-            smb.printStackTrace();
-        } catch (MalformedURLException murlE) {
-            murlE.printStackTrace();
-        } catch (Exception ioE) {
-            ioE.printStackTrace();
+//        try {
+        if (DEBUG) {
+            Log.d(TAG, "listFiles   URL=" + mURL + " " + config);
         }
-        return null;
+        SmbFile file = new SmbFile(mURL, auth);
+        return new ArrayList<SmbFile>(Arrays.asList(file.listFiles()));
+//        } catch (SmbException smb) {
+//            smb.printStackTrace();
+//        } catch (MalformedURLException murlE) {
+//            murlE.printStackTrace();
+//        } catch (Exception ioE) {
+//            ioE.printStackTrace();
+//        }
     }
 
-    public final static boolean upload(Config config, String localPath, String remoteFolder) {
+    public final static boolean upload(Config config, String localPath, String remoteFolder) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
         String mURL = new StringBuilder("smb://").append(config.host).append(remoteFolder).append(localFile.getName()).toString();
-        try {
-            if (DEBUG) {
-                Log.d(TAG, "config=" + config + "  upload      URL=" + mURL);
-            }
-            SmbFile remoteFile = new SmbFile(mURL, auth);
-            InputStream inS = new FileInputStream(localFile);
-            SmbFileOutputStream outS = new SmbFileOutputStream(remoteFile);
-            try {
-                writeStream(inS, outS, localFile.length());
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                inS.close();
-                outS.flush();
-                outS.close();
-            }
-        } catch (SmbException smb) {
-            smb.printStackTrace();
-        } catch (MalformedURLException murlE) {
-            murlE.printStackTrace();
-        } catch (IOException ioE) {
-            ioE.printStackTrace();
+//        try {
+        if (DEBUG) {
+            Log.d(TAG, "config=" + config + "  upload      URL=" + mURL);
         }
+        SmbFile remoteFile = new SmbFile(mURL, auth);
+        InputStream inS = new FileInputStream(localFile);
+        SmbFileOutputStream outS = new SmbFileOutputStream(remoteFile);
+        try {
+            writeStream(inS, outS, localFile.length());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            inS.close();
+            outS.flush();
+            outS.close();
+        }
+//        } catch (SmbException smb) {
+//            smb.printStackTrace();
+//        } catch (MalformedURLException murlE) {
+//            murlE.printStackTrace();
+//        } catch (IOException ioE) {
+//            ioE.printStackTrace();
+//        }
         return false;
     }
 
-    public final static boolean download(Config config, String localPath, String mURL) {
+    public final static boolean download(Config config, String localPath, String mURL) throws Exception {
         return download(config, localPath, mURL, -1);
     }
 
-    public final static boolean download(Config config, String localPath, String mURL, long size) {
+    public final static boolean download(Config config, String localPath, String mURL, long size) throws Exception {
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "download      URL=" + mURL + "   " + localPath);
         }
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
+//        try {
+        SmbFile remoteFile = new SmbFile(mURL, auth);
+        OutputStream outS = new FileOutputStream(localFile);
+        SmbFileInputStream inS = new SmbFileInputStream(remoteFile);
         try {
-            SmbFile remoteFile = new SmbFile(mURL, auth);
-            OutputStream outS = new FileOutputStream(localFile);
-            SmbFileInputStream inS = new SmbFileInputStream(remoteFile);
-            try {
-                writeStream(inS, outS, size);
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                inS.close();
-                outS.flush();
-                outS.close();
-            }
-        } catch (SmbException smb) {
-            smb.printStackTrace();
-        } catch (MalformedURLException murlE) {
-            murlE.printStackTrace();
-        } catch (IOException ioE) {
-            ioE.printStackTrace();
+            writeStream(inS, outS, size);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            inS.close();
+            outS.flush();
+            outS.close();
         }
+//        } catch (SmbException smb) {
+//            smb.printStackTrace();
+//        } catch (MalformedURLException murlE) {
+//            murlE.printStackTrace();
+//        } catch (IOException ioE) {
+//            ioE.printStackTrace();
+//        }
         return false;
     }
 
@@ -147,39 +145,39 @@ public class SambaUtil {
         }
     }
 
-    public final static boolean createFolder(Config config, String parent, String name) {
-        try {
-            NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
-            String mURL = wrapPath(parent, name);
-            if (DEBUG) {
-                Log.d(TAG, "config=" + config + "createFolder      URL=" + mURL + " parent=" + parent + " name=" + name);
-            }
-            SmbFile remoteFile = new SmbFile(mURL, auth);
-            if (!remoteFile.exists()) {
-                remoteFile.mkdir();
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public final static boolean createFolder(Config config, String parent, String name) throws Exception {
+//        try {
+        NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
+        String mURL = wrapPath(parent, name);
+        if (DEBUG) {
+            Log.d(TAG, "config=" + config + "createFolder      URL=" + mURL + " parent=" + parent + " name=" + name);
         }
+        SmbFile remoteFile = new SmbFile(mURL, auth);
+        if (!remoteFile.exists()) {
+            remoteFile.mkdir();
+            return true;
+        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return false;
     }
 
 
-    public final static boolean delete(Config config, String path) {
-        try {
-            NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
-            if (DEBUG) {
-                Log.d(TAG, "config=" + config + "delete      URL=" + path);
-            }
-            SmbFile remoteFile = new SmbFile(path, auth);
-            if (remoteFile.exists()) {
-                remoteFile.delete();
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public final static boolean delete(Config config, String path) throws Exception {
+//        try {
+        NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
+        if (DEBUG) {
+            Log.d(TAG, "config=" + config + "delete      URL=" + path);
         }
+        SmbFile remoteFile = new SmbFile(path, auth);
+        if (remoteFile.exists()) {
+            remoteFile.delete();
+            return true;
+        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return false;
     }
 

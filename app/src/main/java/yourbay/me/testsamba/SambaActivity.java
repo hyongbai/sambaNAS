@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import yourbay.me.testsamba.samba.Config;
 import yourbay.me.testsamba.samba.ConfigDesk79;
@@ -40,14 +39,17 @@ public class SambaActivity extends Activity {
         try {
             EMPTY_REMOTE_FILE = new SmbFile("");
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
     protected void listAndPrepare(String path) {
-        List<SmbFile> FILES = SambaUtil.listFiles(mConfig, path);
-        Map<String, SmbFile> MAP = SmbFileToMap(FILES);
-        prepareCurrentMap(MAP);
+        try {
+            List<SmbFile> FILES = SambaUtil.listFiles(mConfig, path);
+            Map<String, SmbFile> MAP = SmbFileToMap(FILES);
+            prepareCurrentMap(MAP);
+        } catch (Exception e) {
+            handleException(e);
+        }
     }
 
     protected void prepareCurrentMap(Map<String, SmbFile> map) {
@@ -77,7 +79,7 @@ public class SambaActivity extends Activity {
                 } else {
                     FILE.put(new StringBuilder(REMOTE_FILE_PREFIX).append(path).toString(), file);
                 }
-            } catch (SmbException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 FILE.put("  | " + file.getPath(), file);
             }
@@ -92,7 +94,13 @@ public class SambaActivity extends Activity {
         new Thread() {
             @Override
             public void run() {
-                boolean result = SambaUtil.upload(mConfig, path, "/samba/0upload/");
+
+                boolean result = false;
+                try {
+                    result = SambaUtil.upload(mConfig, path, "/samba/0upload/");
+                } catch (Exception e) {
+                    handleException(e);
+                }
                 updateResult("upload", path + " " + String.valueOf(result).toUpperCase());
                 onFolderChange(path, result);
             }
@@ -104,7 +112,12 @@ public class SambaActivity extends Activity {
         new Thread() {
             @Override
             public void run() {
-                boolean result = SambaUtil.download(mConfig, localPath, remotePath);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
+                boolean result = false;
+                try {
+                    result = SambaUtil.download(mConfig, localPath, remotePath);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
+                } catch (Exception e) {
+                    handleException(e);
+                }
                 updateResult("download", localPath + " " + String.valueOf(result).toUpperCase());
             }
         }.start();///folder
@@ -114,7 +127,12 @@ public class SambaActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                boolean result = SambaUtil.delete(mConfig, path);
+                boolean result = false;
+                try {
+                    result = SambaUtil.delete(mConfig, path);
+                } catch (Exception e) {
+                    handleException(e);
+                }
                 onFolderChange(path, result);
                 updateResult("DELETE", path + " " + String.valueOf(result).toUpperCase());
             }
@@ -154,7 +172,12 @@ public class SambaActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                boolean result = SambaUtil.createFolder(mConfig, curRemoteFolder, name);
+                boolean result = false;
+                try {
+                    result = SambaUtil.createFolder(mConfig, curRemoteFolder, name);
+                } catch (Exception e) {
+                    handleException(e);
+                }
                 onFolderChange(curRemoteFolder, result);
                 updateResult("createFolder", SambaUtil.wrapPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
             }
@@ -162,6 +185,10 @@ public class SambaActivity extends Activity {
     }
 
     protected void updateResult(final String action, final String msg) {
+
+    }
+
+    protected void handleException(Exception e) {
 
     }
 }

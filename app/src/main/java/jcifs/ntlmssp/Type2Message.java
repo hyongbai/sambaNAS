@@ -21,9 +21,11 @@ package jcifs.ntlmssp;
 
 import java.io.IOException;
 
+import java.net.UnknownHostException;
+
 import jcifs.Config;
 
-//import jcifs.netbios.NbtAddress;
+import jcifs.netbios.NbtAddress;
 
 /**
  * Represents an NTLMSSP Type-2 message.
@@ -57,14 +59,14 @@ public class Type2Message extends NtlmMessage {
         }
         int domainLength = domain.length;
         byte[] server = new byte[0];
-//        try {
-//            String host = NbtAddress.getLocalHost().getHostName();
-//            if (host != null) {
-//                try {
-//                    server = host.getBytes(UNI_ENCODING);
-//                } catch (IOException ex) { }
-//            }
-//        } catch (UnknownHostException ex) { }
+        try {
+            String host = NbtAddress.getLocalHost().getHostName();
+            if (host != null) {
+                try {
+                    server = host.getBytes(UNI_ENCODING);
+                } catch (IOException ex) { }
+            }
+        } catch (UnknownHostException ex) { }
         int serverLength = server.length;
         byte[] targetInfo = new byte[(domainLength > 0 ? domainLength + 4 : 0) +
                 (serverLength > 0 ? serverLength + 4 : 0) + 4];

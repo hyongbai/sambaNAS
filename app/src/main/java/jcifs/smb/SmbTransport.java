@@ -19,28 +19,16 @@
 
 package jcifs.smb;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NoRouteToHostException;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-import jcifs.UniAddress;
-import jcifs.util.Encdec;
-import jcifs.util.Hexdump;
-import jcifs.util.LogStream;
-import jcifs.util.transport.Request;
-import jcifs.util.transport.Response;
-import jcifs.util.transport.Transport;
-import jcifs.util.transport.TransportException;
-
-//import jcifs.netbios.*;
+import jcifs.*;
+import jcifs.netbios.*;
+import jcifs.util.*;
+import jcifs.util.transport.*;
+import jcifs.dcerpc.*;
+import jcifs.dcerpc.msrpc.*;
 
 public class SmbTransport extends Transport implements SmbConstants {
 
@@ -184,70 +172,69 @@ public class SmbTransport extends Transport implements SmbConstants {
         return (capabilities & cap) == cap;
     }
     boolean isSignatureSetupRequired( NtlmPasswordAuthentication auth ) {
-        return
-//                (flags2 & ServerMessageBlock.FLAGS2_SECURITY_SIGNATURES ) != 0 &&
+        return ( flags2 & ServerMessageBlock.FLAGS2_SECURITY_SIGNATURES ) != 0 &&
                 digest == null &&
                 auth != NtlmPasswordAuthentication.NULL &&
                 NtlmPasswordAuthentication.NULL.equals( auth ) == false;
     }
 
     void ssn139() throws IOException {
-//        Name calledName = new Name( address.firstCalledName(), 0x20, null );
-//        do {
-///* These Socket constructors attempt to connect before SO_TIMEOUT can be applied
-//            if (localAddr == null) {
-//                socket = new Socket( address.getHostAddress(), 139 );
-//            } else {
-//                socket = new Socket( address.getHostAddress(), 139, localAddr, localPort );
-//            }
-//            socket.setSoTimeout( SO_TIMEOUT );
-//*/
-//
-//            socket = new Socket();
-//            if (localAddr != null)
-//                socket.bind(new InetSocketAddress(localAddr, localPort));
-//            socket.connect(new InetSocketAddress(address.getHostAddress(), 139), CONN_TIMEOUT);
-//            socket.setSoTimeout( SO_TIMEOUT );
-//
-//            out = socket.getOutputStream();
-//            in = socket.getInputStream();
-//
-//            SessionServicePacket ssp = new SessionRequestPacket( calledName,
-//                    NbtAddress.getLocalName() );
-//            out.write( sbuf, 0, ssp.writeWireFormat( sbuf, 0 ));
-//            if (readn( in, sbuf, 0, 4 ) < 4) {
-//                try {
-//                    socket.close();
-//                } catch(IOException ioe) {
-//                }
-//                throw new SmbException( "EOF during NetBIOS session request" );
-//            }
-//            switch( sbuf[0] & 0xFF ) {
-//                case SessionServicePacket.POSITIVE_SESSION_RESPONSE:
-//                    if( log.level >= 4 )
-//                        log.println( "session established ok with " + address );
-//                    return;
-//                case SessionServicePacket.NEGATIVE_SESSION_RESPONSE:
-//                    int errorCode = (int)( in.read() & 0xFF );
-//                    switch (errorCode) {
-//                        case NbtException.CALLED_NOT_PRESENT:
-//                        case NbtException.NOT_LISTENING_CALLED:
-//                            socket.close();
-//                            break;
-//                        default:
-//                            disconnect( true );
-//                            throw new NbtException( NbtException.ERR_SSN_SRVC, errorCode );
-//                    }
-//                    break;
-//                case -1:
-//                    disconnect( true );
-//                    throw new NbtException( NbtException.ERR_SSN_SRVC,
-//                            NbtException.CONNECTION_REFUSED );
-//                default:
-//                    disconnect( true );
-//                    throw new NbtException( NbtException.ERR_SSN_SRVC, 0 );
-//            }
-//        } while(( calledName.name = address.nextCalledName()) != null );
+        Name calledName = new Name( address.firstCalledName(), 0x20, null );
+        do {
+/* These Socket constructors attempt to connect before SO_TIMEOUT can be applied
+            if (localAddr == null) {
+                socket = new Socket( address.getHostAddress(), 139 );
+            } else {
+                socket = new Socket( address.getHostAddress(), 139, localAddr, localPort );
+            }
+            socket.setSoTimeout( SO_TIMEOUT );
+*/
+
+            socket = new Socket();
+            if (localAddr != null)
+                socket.bind(new InetSocketAddress(localAddr, localPort));
+            socket.connect(new InetSocketAddress(address.getHostAddress(), 139), CONN_TIMEOUT);
+            socket.setSoTimeout( SO_TIMEOUT );
+
+            out = socket.getOutputStream();
+            in = socket.getInputStream();
+
+            SessionServicePacket ssp = new SessionRequestPacket( calledName,
+                    NbtAddress.getLocalName() );
+            out.write( sbuf, 0, ssp.writeWireFormat( sbuf, 0 ));
+            if (readn( in, sbuf, 0, 4 ) < 4) {
+                try {
+                    socket.close();
+                } catch(IOException ioe) {
+                }
+                throw new SmbException( "EOF during NetBIOS session request" );
+            }
+            switch( sbuf[0] & 0xFF ) {
+                case SessionServicePacket.POSITIVE_SESSION_RESPONSE:
+                    if( log.level >= 4 )
+                        log.println( "session established ok with " + address );
+                    return;
+                case SessionServicePacket.NEGATIVE_SESSION_RESPONSE:
+                    int errorCode = (int)( in.read() & 0xFF );
+                    switch (errorCode) {
+                        case NbtException.CALLED_NOT_PRESENT:
+                        case NbtException.NOT_LISTENING_CALLED:
+                            socket.close();
+                            break;
+                        default:
+                            disconnect( true );
+                            throw new NbtException( NbtException.ERR_SSN_SRVC, errorCode );
+                    }
+                    break;
+                case -1:
+                    disconnect( true );
+                    throw new NbtException( NbtException.ERR_SSN_SRVC,
+                            NbtException.CONNECTION_REFUSED );
+                default:
+                    disconnect( true );
+                    throw new NbtException( NbtException.ERR_SSN_SRVC, 0 );
+            }
+        } while(( calledName.name = address.nextCalledName()) != null );
 
         throw new IOException( "Failed to establish session with " + address );
     }

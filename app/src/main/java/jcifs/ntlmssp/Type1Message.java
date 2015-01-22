@@ -21,9 +21,11 @@ package jcifs.ntlmssp;
 
 import java.io.IOException;
 
-import jcifs.Config;
+import java.net.UnknownHostException;
 
-//import jcifs.netbios.NbtAddress;
+import jcifs.netbios.NbtAddress;
+
+import jcifs.Config;
 
 /**
  * Represents an NTLMSSP Type-1 message.
@@ -46,9 +48,9 @@ public class Type1Message extends NtlmMessage {
                         NTLMSSP_NEGOTIATE_UNICODE : NTLMSSP_NEGOTIATE_OEM);
         DEFAULT_DOMAIN = Config.getProperty("jcifs.smb.client.domain", null);
         String defaultWorkstation = null;
-//        try {
-//            defaultWorkstation = NbtAddress.getLocalHost().getHostName();
-//        } catch (UnknownHostException ex) { }
+        try {
+            defaultWorkstation = NbtAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException ex) { }
         DEFAULT_WORKSTATION = defaultWorkstation;
     }
 
