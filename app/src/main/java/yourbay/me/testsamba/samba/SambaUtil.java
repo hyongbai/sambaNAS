@@ -46,11 +46,14 @@ public class SambaUtil {
     public final static boolean upload(IConfig config, String localPath, String remoteFolder) throws Exception {
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
-        String mURL = new StringBuilder("smb://").append(config.host).append(remoteFolder).append(localFile.getName()).toString();
+        final String remoteFilePath = wrapPath(remoteFolder, localFile.getName());
         if (DEBUG) {
-            Log.d(TAG, "config=" + config + "  upload      URL=" + mURL);
+            Log.d(TAG, "config=" + config + "  upload      URL=" + remoteFilePath);
         }
-        SmbFile remoteFile = new SmbFile(mURL, auth);
+        SmbFile remoteFile = new SmbFile(remoteFilePath, auth);
+        if (remoteFile.exists()) {
+            remoteFile = new SmbFile(wrapPath(remoteFolder, System.currentTimeMillis() + "-" + localFile.getName()), auth);
+        }
         InputStream inS = new FileInputStream(localFile);
         SmbFileOutputStream outS = new SmbFileOutputStream(remoteFile);
         try {
@@ -58,25 +61,21 @@ public class SambaUtil {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            inS.close();
-            outS.flush();
-            outS.close();
         }
         return false;
     }
 
-    public final static boolean download(IConfig config, String localPath, String mURL) throws Exception {
-        return download(config, localPath, mURL, -1);
+    public final static boolean download(IConfig config, String localPath, String remoteFolder) throws Exception {
+        return download(config, localPath, remoteFolder, -1);
     }
 
-    public final static boolean download(IConfig config, String localPath, String mURL, long size) throws Exception {
+    public final static boolean download(IConfig config, String localPath, String remoteFolder, long size) throws Exception {
         if (DEBUG) {
-            Log.d(TAG, "config=" + config + "download      URL=" + mURL + "   " + localPath);
+            Log.d(TAG, "config=" + config + "   download      remoteFolder=" + remoteFolder + "   local=" + localPath);
         }
         NtlmPasswordAuthentication auth = new NtlmPasswordAuthentication(null, config.user, config.password);
         File localFile = new File(localPath);
-        SmbFile remoteFile = new SmbFile(mURL, auth);
+        SmbFile remoteFile = new SmbFile(remoteFolder, auth);
         OutputStream outS = new FileOutputStream(localFile);
         SmbFileInputStream inS = new SmbFileInputStream(remoteFile);
         try {
@@ -84,10 +83,6 @@ public class SambaUtil {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            inS.close();
-            outS.flush();
-            outS.close();
         }
         return false;
     }
@@ -99,27 +94,40 @@ public class SambaUtil {
         float uploaded = 0f;
         final long startMills = System.currentTimeMillis();
         long lastMills = startMills;
-        while ((length = ins.read(tmp)) != -1) {
-            outs.write(tmp, 0, length);
-            uploaded += length;
+        final long DIVIDER = 1000;
+        try {
+            while ((length = ins.read(tmp)) != -1) {
+                outs.write(tmp, 0, length);
+                uploaded += length;
 
-            //DELTA TIME
-            final long currentMill = System.currentTimeMillis();
-            final long delta = currentMill - lastMills;
-            lastMills = currentMill;
+                //DELTA TIME
+                final long currentMill = System.currentTimeMillis();
+                final long delta = currentMill - lastMills;
+                if (delta <= DIVIDER) {
+                    continue;
+                }
 
-            //SPEED
-            final float speed = ((float) length) / delta;
-            final float avegSpeed = uploaded / (currentMill - startMills);
+                lastMills = currentMill;
 
-            //PROGRESS
-            final float progress = (totalSize <= 0) ? -1 : (uploaded * 100) / totalSize;
-            if (DEBUG) {
-                Log.d(TAG, "writeStream progress:" + progress + "    speed=" + speed + "/" + avegSpeed);
+                //SPEED
+                final float speed = ((float) length) / delta;
+                final float avegSpeed = uploaded / (currentMill - startMills);
+
+                //PROGRESS
+                final float progress = (totalSize <= 0) ? -1 : (uploaded * 100) / totalSize;
+                if (DEBUG) {
+                    Log.d(TAG, "writeStream progress:" + progress + "    speed=" + speed + "/" + avegSpeed);
+                }
+
+                //TODO add progress while uploading
+                //TODO upload speed!!
             }
-
-            //TODO add progress while uploading
-            //TODO upload speed!!
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            ins.close();
+            outs.flush();
+            outs.close();
         }
     }
 

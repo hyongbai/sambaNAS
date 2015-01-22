@@ -306,7 +306,7 @@ public class MainActivity extends SambaActivity {
     }
 
     @Override
-    protected void onFolderChange(String path, boolean result) {
+    protected void onRemoteFolderChange(String path, boolean result) {
         loadToSpinner(path);
     }
 

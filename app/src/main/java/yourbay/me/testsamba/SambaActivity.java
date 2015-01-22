@@ -98,24 +98,24 @@ public class SambaActivity extends Activity {
 
                 boolean result = false;
                 try {
-                    result = SambaUtil.upload(mConfig, path, "/samba/0upload/");
+                    result = SambaUtil.upload(mConfig, path, curRemoteFolder);
                 } catch (Exception e) {
                     handleException(e);
                 }
                 updateResult("upload", path + " " + String.valueOf(result).toUpperCase());
-                onFolderChange(path, result);
+                onRemoteFolderChange(curRemoteFolder, result);
             }
         }.start();///folder
     }
 
-    protected final void download(final String localPath, final String remotePath) {
+    protected final void download(final String localPath, final String remoteFolder) {
         Log.d(TAG, "download      " + localPath);
         new Thread() {
             @Override
             public void run() {
                 boolean result = false;
                 try {
-                    result = SambaUtil.download(mConfig, localPath, remotePath);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
+                    result = SambaUtil.download(mConfig, localPath, remoteFolder);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
                 } catch (Exception e) {
                     handleException(e);
                 }
@@ -134,13 +134,13 @@ public class SambaActivity extends Activity {
                 } catch (Exception e) {
                     handleException(e);
                 }
-                onFolderChange(path, result);
+                onRemoteFolderChange(path, result);
                 updateResult("DELETE", path + " " + String.valueOf(result).toUpperCase());
             }
         }).start();
     }
 
-    protected void onFolderChange(String path, boolean result) {
+    protected void onRemoteFolderChange(String path, boolean result) {
         //TODO by child
     }
 
@@ -206,7 +206,7 @@ public class SambaActivity extends Activity {
                 } catch (Exception e) {
                     handleException(e);
                 }
-                onFolderChange(curRemoteFolder, result);
+                onRemoteFolderChange(curRemoteFolder, result);
                 updateResult("createFolder", SambaUtil.wrapPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
             }
         }).start();
@@ -221,6 +221,7 @@ public class SambaActivity extends Activity {
      * SmbException
      */
     protected void handleException(Exception e) {
+        e.printStackTrace();
         updateResult("ERROR", e.getClass().getSimpleName() + ": \"" + e.getMessage() + "\"");
         if (e instanceof SmbAuthException) {
             updateResult("handleException", "AUTH ERROR!!! " + e.getMessage());
