@@ -2,6 +2,7 @@ package yourbay.me.testsamba;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.Map;
 import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
 import yourbay.me.testsamba.samba.IConfig;
+import yourbay.me.testsamba.samba.SambaHelper;
 import yourbay.me.testsamba.samba.SambaUtil;
 
 /**
@@ -19,7 +21,7 @@ import yourbay.me.testsamba.samba.SambaUtil;
  */
 public class SambaActivity extends Activity {
 
-    protected final static String TAG = SambaUtil.TAG;
+    protected final static String TAG = SambaHelper.TAG;
     protected final static String LOCAL_FOLDER_PATH = "/test/samba";
     protected final static String REMOTE_PARENT = "   ... ";
     protected final static String REMOTE_FOLDER_PREFIX = " > ";
@@ -45,7 +47,7 @@ public class SambaActivity extends Activity {
 
     protected void listAndPrepare(String path) {
         try {
-            List<SmbFile> FILES = SambaUtil.listFiles(mConfig, path);
+            List<SmbFile> FILES = SambaHelper.listFiles(mConfig, path);
             Map<String, SmbFile> MAP = SmbFileToMap(FILES);
             prepareCurrentMap(MAP);
         } catch (Exception e) {
@@ -73,8 +75,7 @@ public class SambaActivity extends Activity {
         Map<String, SmbFile> FOLDER = new LinkedHashMap<>();
         for (SmbFile file : files) {
             try {
-                String path = file.getPath();
-                path = path.replace("smb://" + mConfig.host, "");
+                final String path = removeHost(file.getPath());
                 if (file.isDirectory()) {
                     FOLDER.put(new StringBuilder(REMOTE_FOLDER_PREFIX).append(path).toString(), file);
                 } else {
@@ -89,6 +90,21 @@ public class SambaActivity extends Activity {
         return FOLDER;
     }
 
+    protected final String removeHost(String path) {
+        if (TextUtils.isEmpty(path)) {
+            return path;
+        }
+        if (path.startsWith("smb://")) {
+            path = path.replace("smb://", "");
+        }
+        if (!path.contains("/")) {
+            return path;
+        }
+        int index = path.indexOf("/");
+        path = path.substring(index);
+        return path;
+    }
+
 
     /* *************ACTIONS****************/
     protected final void upload(final String path) {
@@ -98,7 +114,7 @@ public class SambaActivity extends Activity {
 
                 boolean result = false;
                 try {
-                    result = SambaUtil.upload(mConfig, path, curRemoteFolder);
+                    result = SambaHelper.upload(mConfig, path, curRemoteFolder);
                 } catch (Exception e) {
                     handleException(e);
                 }
@@ -115,7 +131,23 @@ public class SambaActivity extends Activity {
             public void run() {
                 boolean result = false;
                 try {
-                    result = SambaUtil.download(mConfig, localPath, remoteFolder);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
+                    result = SambaHelper.download(mConfig, localPath, remoteFolder);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
+                } catch (Exception e) {
+                    handleException(e);
+                }
+                updateResult("download", localPath + " " + String.valueOf(result).toUpperCase());
+            }
+        }.start();///folder
+    }
+
+    protected final void downloadInFullPath(final String localPath, final String remoteFolder) {
+        Log.d(TAG, "download      " + localPath);
+        new Thread() {
+            @Override
+            public void run() {
+                boolean result = false;
+                try {
+                    result = SambaHelper.download(mConfig, localPath, remoteFolder);//"smb://192.168.2.79/samba/0upload/IMG_test_fix_exif_date.jpg"
                 } catch (Exception e) {
                     handleException(e);
                 }
@@ -130,11 +162,11 @@ public class SambaActivity extends Activity {
             public void run() {
                 boolean result = false;
                 try {
-                    result = SambaUtil.delete(mConfig, path);
+                    result = SambaHelper.delete(mConfig, path);
                 } catch (Exception e) {
                     handleException(e);
                 }
-                onRemoteFolderChange(path, result);
+                onRemoteFolderChange(curRemoteFolder, result);
                 updateResult("DELETE", path + " " + String.valueOf(result).toUpperCase());
             }
         }).start();
@@ -150,7 +182,7 @@ public class SambaActivity extends Activity {
             public void run() {
                 String[] paths = null;
                 try {
-                    paths = SambaUtil.listWorkGroupPath();
+                    paths = SambaHelper.listWorkGroupPath();
                 } catch (Exception e) {
                     handleException(e);
                 }
@@ -172,7 +204,7 @@ public class SambaActivity extends Activity {
             public void run() {
                 String[] paths = null;
                 try {
-                    paths = SambaUtil.listServerPath();
+                    paths = SambaHelper.listServerPath();
                 } catch (Exception e) {
                     handleException(e);
                 }
@@ -193,7 +225,7 @@ public class SambaActivity extends Activity {
     }
 
     protected void listRoot() {
-        curRemoteFolder = SambaUtil.getRemotePath(mConfig, "/");
+        curRemoteFolder = SambaUtil.getRootURL(mConfig);
     }
 
     protected void createFolder(final String name) {
@@ -202,7 +234,7 @@ public class SambaActivity extends Activity {
             public void run() {
                 boolean result = false;
                 try {
-                    result = SambaUtil.createFolder(mConfig, curRemoteFolder, name);
+                    result = SambaHelper.createFolder(mConfig, curRemoteFolder, name);
                 } catch (Exception e) {
                     handleException(e);
                 }

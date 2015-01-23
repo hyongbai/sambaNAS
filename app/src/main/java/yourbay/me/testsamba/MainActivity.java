@@ -89,6 +89,8 @@ public class MainActivity extends SambaActivity {
             IntentUtils.pickupImages(this, REQUEST_CODE_CHOOSE_IMAGE);
         } else if (id == R.id.action_upload_video) {
             IntentUtils.pickupVideo(this, REQUEST_CODE_CHOOSE_IMAGE);
+        } else if (id == R.id.action_play_video) {
+            playVideo(curRemoteFile);
         } else if (id == R.id.action_download) {
             download(genLocalPath(), curRemoteFile);
         } else if (id == R.id.action_clear) {
@@ -198,7 +200,7 @@ public class MainActivity extends SambaActivity {
                     }
                 }
         );
-//        curRemoteFolder = SambaUtil.getRemotePath(mConfig, "/");
+//        curRemoteFolder = SambaUtil.getFullURL(mConfig, "/");
 //        loadToSpinner(curRemoteFolder);
     }
 
@@ -250,6 +252,18 @@ public class MainActivity extends SambaActivity {
     protected void listRoot() {
         super.listRoot();
         loadToSpinner(curRemoteFolder);
+    }
+
+
+    private final void playVideo(String path) {
+        if (!path.toLowerCase().endsWith(".mp4")) {
+            Toast.makeText(this, "NOT a MP4 file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent = new Intent();
+        intent.putExtra(VideoActivity.ACTION_KEY_URL, path);
+        intent.setClass(this, VideoActivity.class);
+        startActivity(intent);
     }
 
 

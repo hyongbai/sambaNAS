@@ -23,12 +23,18 @@
         android:title="Upload video"
         android:orderInCategory="100"
         android:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_play_video"
+        android:title="Play Video"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+
     <item
         android:id="@+id/action_download"
         android:title="@string/download"
         android:orderInCategory="100"
         android:showAsAction="never" />
-
     <item
         android:id="@+id/action_create_folder"
         android:title="Create folder"
