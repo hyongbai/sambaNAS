@@ -46,7 +46,7 @@ public class SambaHelper {
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "  upload      URL=" + remoteFilePath);
         }
-        InputStream inS = new FileInputStream(localFile);
+        FileInputStream inS = new FileInputStream(localFile);
         SmbFileOutputStream outS = new SmbFileOutputStream(remoteFile);
         try {
             writeAndCloseStream(inS, outS, localFile.length());
@@ -77,7 +77,7 @@ public class SambaHelper {
 
     public final static boolean download(String localPath, SmbFile remoteFile) throws Exception {
         final File localFile = new File(localPath);
-        final OutputStream outS = new FileOutputStream(localFile);
+        final FileOutputStream outS = new FileOutputStream(localFile);
         final SmbFileInputStream inS = new SmbFileInputStream(remoteFile);
         final long size = remoteFile.length();
         try {

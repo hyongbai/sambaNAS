@@ -82,7 +82,7 @@ public class MainActivity extends SambaActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_change_host) {
-//            showAccountDialog();
+            showAccountDialog();
         } else if (id == R.id.action_smb_home) {
             listRoot();
         } else if (id == R.id.action_upload) {
@@ -103,7 +103,6 @@ public class MainActivity extends SambaActivity {
             showDeleteDialog(curRemoteFolder);
         } else if (id == R.id.action_list_workgroup) {
             listWorkGroup();
-//            listServer();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -146,6 +145,9 @@ public class MainActivity extends SambaActivity {
                     @Override
                     public void onConfig(IConfig config, Object obj) {
                         Log.d(TAG, "" + config);
+                        mConfig = config;
+                        listRoot();
+                        updateWorkgroupUI();
                     }
                 }
         );
@@ -170,7 +172,7 @@ public class MainActivity extends SambaActivity {
                         mConfig.updateHost(host);
                         Log.d(TAG, "wgSpinner onItemSelected  " + mConfig);
                         listRoot();
-                        tvSelectedWG.setText("Current Host:" + mConfig.host);
+                        updateWorkgroupUI();
                     }
 
                     @Override
@@ -224,7 +226,7 @@ public class MainActivity extends SambaActivity {
             curRemoteFile = file.getPath();
             curRemoteFolder = file.getParent();
         }
-        updateSelected();
+        updateSelectedUI();
     }
 
 
@@ -267,7 +269,11 @@ public class MainActivity extends SambaActivity {
     }
 
 
-    private void updateSelected() {
+    private void updateWorkgroupUI() {
+        tvSelectedWG.setText("Current Host:" + mConfig.host);
+    }
+
+    private void updateSelectedUI() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
