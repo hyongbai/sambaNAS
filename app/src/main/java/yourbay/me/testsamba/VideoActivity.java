@@ -7,13 +7,15 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.FileDescriptor;
 
-import yourbay.me.testsamba.samba.SFileDescriptorCreator;
-import yourbay.me.testsamba.samba.SmbStreamTransfer;
+import yourbay.me.testsamba.samba.SambaUtil;
+import yourbay.me.testsamba.util.IntentUtils;
 
 /**
  * Created by ram on 15/1/22.
@@ -26,11 +28,12 @@ public class VideoActivity extends Activity {
     public final static String URL_TEST_REMOTE_3gp = "http://f.pepst.com/c/d/EF25EB/480964-8231/ssc3/home/005/tikowap.wap/albums/baile.3gp";
     public final static String URL_TEST_REMOTE_MP4 = "http://vjs.zencdn.net/v/oceans.mp4";
     //    public final static String TAG = "VideoActivity";
-    public final static String TAG = SFileDescriptorCreator.TAG;
+    public final static String TAG = "VideoActivity";
     public final static String ACTION_KEY_URL = "URL";
     private MediaPlayer mediaPlayer;
     private SurfaceView surfaceView;
     private int position;
+    private String mURL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,21 @@ public class VideoActivity extends Activity {
         context = this;
         setContentView(R.layout.activity_video);
         initSurface();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_video, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_open_3rd) {
+            IntentUtils.openVideo(this, mURL);
+        }
+        return super.onMenuItemSelected(featureId, item);
     }
 
     @Override
@@ -95,7 +113,8 @@ public class VideoActivity extends Activity {
     private void setData() {
         try {
             String url = getIntent().getStringExtra(ACTION_KEY_URL);
-            url = SmbStreamTransfer.wrapURL(url);
+            url = SambaUtil.wrapStreamURL(url, TransferService.iStreamer.getIp(), TransferService.iStreamer.getPort());
+            mURL = url;
 //            FileDescriptor fd = null;
 //            fd = new FileInputStream(URL_TEST_LOCAL_3GP_PATH).getFD();
 //            ParcelFileDescriptor pfd = SFileDescriptorCreator.createDescriptor(url);

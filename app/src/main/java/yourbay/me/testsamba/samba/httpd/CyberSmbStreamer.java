@@ -1,39 +1,37 @@
-package yourbay.me.testsamba.samba;
+package yourbay.me.testsamba.samba.httpd;
 
 import android.util.Log;
-import android.webkit.MimeTypeMap;
 
 import org.cybergarage.http.HTTPRequest;
 import org.cybergarage.http.HTTPResponse;
 import org.cybergarage.http.HTTPServerList;
 import org.cybergarage.http.HTTPStatus;
 import org.cybergarage.net.HostInterface;
+import org.cybergarage.util.StringUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
+import yourbay.me.testsamba.samba.SambaHelper;
+import yourbay.me.testsamba.samba.SambaUtil;
 
 /**
  * Created by ram on 15/1/28.
  */
-public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HTTPRequestListener {
+public class CyberSmbStreamer extends Thread implements org.cybergarage.http.HTTPRequestListener, IStreamer {
 
-    public static final String CONTENT_EXPORT_URI = "/smb=";
-    public static final String TAG = "SmbStreamTransfer";
+    public static final String TAG = SambaHelper.TAG;
     private HTTPServerList httpServerList = new HTTPServerList();
     private static String bindIP = null;
     private static int bindPort = 2222;
     private static final int MAX_ADDRESSING_COUNT = 1000;
 
 
-    public String getBindIP() {
+    @Override
+    public String getIp() {
         return bindIP;
     }
 
@@ -49,7 +47,8 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
         this.httpServerList = httpServerList;
     }
 
-    public int getHTTPPort() {
+    @Override
+    public int getPort() {
         return bindPort;
     }
 
@@ -63,7 +62,7 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
 //        }
         HostInterface.USE_ONLY_IPV4_ADDR = true;
         int retryCnt = 0;
-        int port = getHTTPPort();
+        int port = getPort();
         HTTPServerList hsl = getHttpServerList();
         while (hsl.open(port) == false) {
             retryCnt++;
@@ -71,7 +70,7 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
                 return;
             }
             setHTTPPort(port + 1);
-            port = getHTTPPort();
+            port = getPort();
         }
         hsl.addRequestListener(this);
         hsl.start();
@@ -80,6 +79,7 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
         if (ip != null && ip.contains("/")) {
             ip = ip.replaceAll("/", "");
         }
+//        ip = "127.0.0.1";
         setBindIP(ip);
         if (SambaHelper.DEBUG) {
             Log.d(TAG, "SERVER:  ip=" + ip + "  bindIP=" + bindIP + "   port=" + port + "   bindPort=" + bindPort);
@@ -89,27 +89,23 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
     @Override
     public void httpRequestRecieved(HTTPRequest httpReq) {
         String uri = httpReq.getURI();
-        String filePaths = cropURL(uri);
+        String filePaths = SambaUtil.cropStreamURL(uri);
         if (SambaHelper.DEBUG) {
             Log.d(TAG, "httpRequestRecieved uri=" + uri + "   filePaths=" + filePaths);
         }
-        if (filePaths == null || !filePaths.startsWith(SambaHelper.SMB_URL_LAN)) {
-            if (SambaHelper.DEBUG) {
-                Log.d(TAG, "httpRequestRecieved NOT AN SAMBA URL");
-            }
+        if (!uri.startsWith(SambaHelper.CONTENT_EXPORT_URI) || filePaths == null || !filePaths.startsWith(SambaHelper.SMB_URL_LAN)) {
             httpReq.returnBadRequest();
             return;
         }
         try {
             SmbFile file = new SmbFile(filePaths);
             long contentLen = file.length();
-            String contentType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(filePaths));
+            String contentType = SambaUtil.getVideoMimeType(filePaths);
             InputStream contentIn = file.getInputStream();
             if (SambaHelper.DEBUG) {
                 Log.d(TAG, "httpRequestRecieved contentLen=" + contentLen + "  contentType=" + contentType + "   name=" + file.getName() + "     ins=" + (contentIn != null));
             }
-            if (contentLen <= 0 || contentType.length() <= 0
-                    || contentIn == null) {
+            if (contentLen <= 0 || StringUtil.hasData(contentType) || contentIn == null) {
                 httpReq.returnBadRequest();
                 return;
             }
@@ -142,42 +138,9 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
         }
     }
 
-    public final static String cropURL(String url) {
-//        if (SambaHelper.DEBUG) {
-//            Log.d(TAG, "cropURL " + url);
-//        }
-        try {
-            url = URLDecoder.decode(url, "UTF-8");
-        } catch (UnsupportedEncodingException e1) {
-            e1.printStackTrace();
-        }
-        if (url.length() <= CONTENT_EXPORT_URI.length()) {
-            return url;
-        }
-        String filePaths = SambaHelper.SMB_URL_LAN + url.substring(CONTENT_EXPORT_URI.length());
-        int indexOf = filePaths.indexOf("&");
-        if (indexOf != -1) {
-            filePaths = filePaths.substring(0, indexOf);
-        }
-        return filePaths;
-    }
 
-    public final static String wrapURL(String url) {
-        try {
-            url = url.substring(SambaHelper.SMB_URL_LAN.length());
-            url = URLEncoder.encode(url, "UTF-8");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        StringBuilder builder = new StringBuilder("http://").append(bindIP).append(File.pathSeparator).append(bindPort).append(CONTENT_EXPORT_URI);
-        builder.append(url);
-        if (SambaHelper.DEBUG) {
-            Log.d(TAG, "wrapURL " + url + "  " + builder.toString());
-        }
-        return builder.toString();
-    }
-
-    public void stopTransfer() {
+    @Override
+    public void stopStream() {
         HTTPServerList httpServerList = getHttpServerList();
         httpServerList.stop();
         httpServerList.close();

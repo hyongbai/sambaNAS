@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -265,8 +264,10 @@ public class MainActivity extends SambaActivity {
     }
 
     private final void playVideo(String path) {
-//        path = "smb://;ram:1234@RAM-ELEM/samba/videos/baile.3gp";
-        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path + ""));
+        if (TextUtils.isEmpty(path)) {
+            path = "smb://;ram:1234@RAM-ELEM/samba/videos/test.mp4";
+        }
+        String mime = SambaUtil.getVideoMimeType(path) + "";
         Log.d(TAG, "playVideo   " + mime);
         if (!String.valueOf(mime).toLowerCase().startsWith("video")) {
             Toast.makeText(this, "NOT a video file  " + mime, Toast.LENGTH_SHORT).show();

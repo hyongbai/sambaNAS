@@ -4,20 +4,22 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import yourbay.me.testsamba.samba.SmbStreamTransfer;
+import yourbay.me.testsamba.samba.httpd.IStreamer;
+import yourbay.me.testsamba.samba.httpd.NanoSmbStreamer;
 
 /**
  * Created by ram on 15/1/28.
  */
 public class TransferService extends Service {
 
-    SmbStreamTransfer transfer;
+    public static IStreamer iStreamer;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        transfer = new SmbStreamTransfer();
-        transfer.start();
+//        iStreamer = new CyberSmbStreamer();
+        iStreamer = new NanoSmbStreamer();
+        iStreamer.start();
     }
 
     @Override
@@ -33,6 +35,6 @@ public class TransferService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        transfer.stopTransfer();
+        iStreamer.stopStream();
     }
 }

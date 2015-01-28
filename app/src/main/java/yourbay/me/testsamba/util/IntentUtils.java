@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 
 import java.util.Iterator;
@@ -53,6 +54,20 @@ public class IntentUtils {
         boolean available = isIntentAvailable(activity, intent);
         if (available) {
             activity.startActivityForResult(intent, requestCode);
+        }
+        return available;
+    }
+
+    public final static boolean openVideo(Activity activity, String url) {
+        if (activity == null) {
+            return false;
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri uri = Uri.parse(url);
+        intent.setDataAndType(uri, "video/mp4");
+        boolean available = isIntentAvailable(activity, intent);
+        if (available) {
+            activity.startActivity(intent);
         }
         return available;
     }

@@ -1,6 +1,12 @@
 package yourbay.me.testsamba.samba;
 
 import android.text.TextUtils;
+import android.webkit.MimeTypeMap;
+
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import jcifs.smb.SmbFile;
 
@@ -104,7 +110,7 @@ public class SambaUtil {
         if (TextUtils.isEmpty(config.user) || TextUtils.isEmpty(config.password)) {
             return url;
         }
-        
+
         StringBuilder wrappedHost = new StringBuilder(";")//
                 .append(config.user)//
                 .append(":")//
@@ -119,4 +125,58 @@ public class SambaUtil {
         url = url.replace(config.host, wrappedHost.toString());
         return url;
     }
+
+
+    public final static String cropStreamURL(String url) {
+//        if (SambaHelper.DEBUG) {
+//            Log.d(TAG, "cropStreamURL " + url);
+//        }
+        try {
+            url = URLDecoder.decode(url, "UTF-8");
+        } catch (UnsupportedEncodingException e1) {
+            e1.printStackTrace();
+        }
+        if (url.length() <= SambaHelper.CONTENT_EXPORT_URI.length()) {
+            return url;
+        }
+        if (!url.startsWith(SambaHelper.CONTENT_EXPORT_URI)) {
+            return url;
+        }
+        String filePaths = SambaHelper.SMB_URL_LAN + url.substring(SambaHelper.CONTENT_EXPORT_URI.length());
+        int indexOf = filePaths.indexOf("&");
+        if (indexOf != -1) {
+            filePaths = filePaths.substring(0, indexOf);
+        }
+        return filePaths;
+    }
+
+    public final static String wrapStreamURL(String url, String ip, int port) {
+        try {
+            url = url.substring(SambaHelper.SMB_URL_LAN.length());
+            url = URLEncoder.encode(url, "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        StringBuilder builder = new StringBuilder("http://")
+                .append(ip)//
+                .append(File.pathSeparator)//
+                .append(port)//
+                .append(SambaHelper.CONTENT_EXPORT_URI);//
+        builder.append(url);
+        return builder.toString();
+    }
+
+
+    public static final String getVideoMimeType(String path) {
+        String exten = MimeTypeMap.getFileExtensionFromUrl(path);
+        if (TextUtils.isEmpty(exten)) {
+            return null;
+        }
+        exten = exten.toLowerCase();
+        if (!SambaHelper.VIDEOS.contains(exten)) {
+            return null;
+        }
+        return new StringBuilder("video/").append(exten).toString();
+    }
+
 }

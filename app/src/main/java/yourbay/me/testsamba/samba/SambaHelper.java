@@ -26,6 +26,8 @@ public class SambaHelper {
     public final static boolean DEBUG = true;
     public final static String SMB_URL_LAN = "smb://";
     public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
+    public static final String VIDEOS = "_mp4_3gp_mkv_mov_avi_rmvb_wav_m3u8_";
+    public static final String CONTENT_EXPORT_URI = "/smb=";
 
     public final static List<SmbFile> listFiles(IConfig config, String fullPath) throws Exception {
         SmbFile file = new SmbFile(SambaUtil.getFullURL(config, fullPath));
@@ -94,7 +96,7 @@ public class SambaHelper {
                 //DELTA TIME
                 final long currentMill = System.currentTimeMillis();
                 final long deltaMill = currentMill - lastMills;
-                if ((deltaMill <= LOG_PRINT_DURATION_DIVIDER && uploaded < totalSize) || totalSize > 0 || deltaMill <= 0) {
+                if ((deltaMill <= LOG_PRINT_DURATION_DIVIDER && uploaded < totalSize) || deltaMill <= 0) {
                     continue;
                 }
                 lastMills = currentMill;
