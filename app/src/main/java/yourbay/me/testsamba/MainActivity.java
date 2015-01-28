@@ -46,11 +46,18 @@ public class MainActivity extends SambaActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, TransferService.class));
         setContentView(R.layout.activity_samba);
         tvResult = (TextView) findViewById(R.id.tv_result);
         tvSelectedFile = (TextView) findViewById(R.id.tv_selected_file);
         tvSelectedWG = (TextView) findViewById(R.id.tv_selected_workgroup);
         initSpinner();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, TransferService.class));
     }
 
     @Override
@@ -258,7 +265,8 @@ public class MainActivity extends SambaActivity {
 
 
     private final void playVideo(String path) {
-        if (!path.toLowerCase().endsWith(".mp4")) {
+        path = "smb://;ram:1234@RAM-ELEM/samba/videos/baile.3gp";
+        if (!path.toLowerCase().endsWith(".mp4") && !path.toLowerCase().endsWith(".3gp")) {
             Toast.makeText(this, "NOT a MP4 file", Toast.LENGTH_SHORT).show();
             return;
         }

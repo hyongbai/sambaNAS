@@ -1,60 +1,185 @@
 package yourbay.me.testsamba;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.widget.VideoView;
+import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+
+import java.io.FileDescriptor;
+
+import yourbay.me.testsamba.samba.SFileDescriptorCreator;
+import yourbay.me.testsamba.samba.SmbStreamTransfer;
 
 /**
  * Created by ram on 15/1/22.
  */
 public class VideoActivity extends Activity {
 
+    public static Context context;
+    public final static String URL_TEST_LOCAL_VIDEO_PATH = "/storage/emulated/0/test/samba/test.mp4";
+    public final static String URL_TEST_LOCAL_3GP_PATH = "/storage/emulated/0/baile.3gp";
+    public final static String URL_TEST_REMOTE_3gp = "http://f.pepst.com/c/d/EF25EB/480964-8231/ssc3/home/005/tikowap.wap/albums/baile.3gp";
+    public final static String URL_TEST_REMOTE_MP4 = "http://vjs.zencdn.net/v/oceans.mp4";
+    //    public final static String TAG = "VideoActivity";
+    public final static String TAG = SFileDescriptorCreator.TAG;
     public final static String ACTION_KEY_URL = "URL";
-    private VideoView videoView;
+    private MediaPlayer mediaPlayer;
+    private SurfaceView surfaceView;
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        videoView = new VideoView(this);
-        setContentView(videoView);
-        checkUrl();
-        MediaPlayer mediaPlayer = new MediaPlayer();
-    }
-
-    private void checkUrl() {
-        try {
-            Intent intent = getIntent();
-            if (intent.hasExtra(ACTION_KEY_URL)) {
-                String url = intent.getStringExtra(ACTION_KEY_URL);
-                play(url);
-                return;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void play(String url) {
-        videoView.setVideoPath(url);
+        context = this;
+        setContentView(R.layout.activity_video);
+        initSurface();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        videoView.pause();
+        pause();
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        videoView.start();
+    protected void onResume() {
+        super.onResume();
+        resume();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        videoView.stopPlayback();
+        stop();
     }
+
+    private void initSurface() {
+        Intent intent = getIntent();
+        if (!intent.hasExtra(ACTION_KEY_URL)) {
+            return;
+        }
+        mediaPlayer = new MediaPlayer();
+        surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
+        surfaceView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                log("surfaceDestroyed");
+            }
+
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                log("surfaceCreated");
+                setData();
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                log("surfaceChanged");
+            }
+        });
+        mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                log("onError    what=" + what + "  extra=" + extra);
+                return false;
+            }
+        });
+    }
+
+    private void setData() {
+        try {
+            String url = getIntent().getStringExtra(ACTION_KEY_URL);
+            url = SmbStreamTransfer.wrapURL(url);
+//            FileDescriptor fd = null;
+//            fd = new FileInputStream(URL_TEST_LOCAL_3GP_PATH).getFD();
+//            ParcelFileDescriptor pfd = SFileDescriptorCreator.createDescriptor(url);
+//            fd = pfd.getFileDescriptor();
+            final Object source = url;
+            new Thread() {
+                @Override
+                public void run() {
+                    prepare(source);
+                }
+            }.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void prepare(Object source) {
+        try {
+            log("prepare     FD =  " + String.valueOf(source));
+            //reset
+            mediaPlayer.reset();
+            log("reset");
+
+            //audio
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            log("setAudioStreamType");
+
+            //DataSource
+            if (source instanceof String) {
+                mediaPlayer.setDataSource(String.valueOf(source));
+            } else if (source instanceof FileDescriptor) {
+                mediaPlayer.setDataSource((FileDescriptor) source);
+            }
+            log("setDataSource");
+
+            //attach surfaceView
+            mediaPlayer.setDisplay(surfaceView.getHolder());
+            log("setDisplay");
+
+            //prepare
+            mediaPlayer.prepare();
+            log("prepare");
+
+            //start
+            mediaPlayer.start();
+            log("start");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log("prepare    Exception:" + e.getMessage() + " " + e.getClass().getName());
+        }
+    }
+
+    private void stop() {
+        if (mediaPlayer == null) {
+            return;
+        }
+        if (mediaPlayer.isPlaying()) {
+            position = mediaPlayer.getCurrentPosition();
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    private void pause() {
+        if (mediaPlayer == null) {
+            return;
+        }
+        if (mediaPlayer.isPlaying()) {
+            position = mediaPlayer.getCurrentPosition();
+            mediaPlayer.pause();
+        }
+    }
+
+    private void resume() {
+        if (mediaPlayer == null || mediaPlayer.isPlaying()) {
+            return;
+        }
+//        mediaPlayer.seekTo(position);
+//        mediaPlayer.s
+    }
+
+    private void log(String msg) {
+        Log.d(TAG, "VideoActivity   " + msg);
+    }
+
 }

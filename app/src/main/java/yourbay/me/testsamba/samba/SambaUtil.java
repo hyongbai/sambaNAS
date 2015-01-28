@@ -104,6 +104,7 @@ public class SambaUtil {
         if (TextUtils.isEmpty(config.user) || TextUtils.isEmpty(config.password)) {
             return url;
         }
+        
         StringBuilder wrappedHost = new StringBuilder(";")//
                 .append(config.user)//
                 .append(":")//

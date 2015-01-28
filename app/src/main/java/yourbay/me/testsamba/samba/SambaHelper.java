@@ -1,6 +1,5 @@
 package yourbay.me.testsamba.samba;
 
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -23,7 +22,7 @@ import jcifs.smb.SmbFileOutputStream;
  */
 public class SambaHelper {
     public final static String TAG = "SambaUtil";
-    public final static int IO_BUFFER_SIZE = 16 * 1024;
+    public final static int IO_BUFFER_SIZE = 8 * 1024;
     private final static boolean DEBUG = true;
     public final static String SMB_URL_LAN = "smb://";
     public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
@@ -58,18 +57,9 @@ public class SambaHelper {
     }
 
     public final static boolean download(IConfig config, String localPath, String remotePath) throws Exception {
+        remotePath = SambaUtil.getFullURL(config, remotePath);
         if (DEBUG) {
             Log.d(TAG, "download remotePath=" + remotePath + "   local=" + localPath + "  config = " + config);
-        }
-        if (config != null && !TextUtils.isEmpty(config.user) && !TextUtils.isEmpty(config.password)) {
-            String wrappedHost = new StringBuilder(";")//
-                    .append(config.user)//
-                    .append(":")//
-                    .append(config.password)//
-                    .append("@")//
-                    .append(config.host)//
-                    .toString();
-            remotePath = remotePath.replace(config.host, wrappedHost);
         }
         SmbFile remoteFile = new SmbFile(remotePath);
         return download(localPath, remoteFile);
@@ -89,7 +79,7 @@ public class SambaHelper {
         return false;
     }
 
-    private final static void writeAndCloseStream(InputStream ins, OutputStream outs, final long totalSize) throws IOException {
+    public final static void writeAndCloseStream(InputStream ins, OutputStream outs, final long totalSize) throws IOException {
         byte[] tmp = new byte[IO_BUFFER_SIZE];
         int length;
         float uploaded = 0f;
@@ -103,21 +93,20 @@ public class SambaHelper {
 
                 //DELTA TIME
                 final long currentMill = System.currentTimeMillis();
-                final long delta = currentMill - lastMills;
-                if (delta <= LOG_PRINT_DURATION_DIVIDER && uploaded < totalSize) {
+                final long deltaMill = currentMill - lastMills;
+                if ((deltaMill <= LOG_PRINT_DURATION_DIVIDER && uploaded < totalSize) || totalSize > 0 || deltaMill <= 0) {
                     continue;
                 }
-
                 lastMills = currentMill;
 
                 //SPEED
-                final float speed = ((float) length) / delta;
+                final float speed = ((float) length) / deltaMill;
                 final float avegSpeed = uploaded / (currentMill - startMills);
 
                 //PROGRESS
                 final float progress = (totalSize <= 0) ? -1 : (uploaded * 100) / totalSize;
                 if (DEBUG) {
-                    Log.d(TAG, "writeAndCloseStream progress:" + progress + "    speed=" + speed + "/" + avegSpeed);
+                    Log.d(TAG, "writeAndCloseStream progress:" + progress + "   uploaded=" + uploaded + "    speed=" + speed + "/" + avegSpeed);
                 }
 
                 //TODO add progress while uploading
