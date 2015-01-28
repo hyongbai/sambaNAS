@@ -23,7 +23,7 @@ import jcifs.smb.SmbFileOutputStream;
 public class SambaHelper {
     public final static String TAG = "SambaUtil";
     public final static int IO_BUFFER_SIZE = 8 * 1024;
-    private final static boolean DEBUG = true;
+    public final static boolean DEBUG = true;
     public final static String SMB_URL_LAN = "smb://";
     public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
 

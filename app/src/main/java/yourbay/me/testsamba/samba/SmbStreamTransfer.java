@@ -7,7 +7,9 @@ import org.cybergarage.http.HTTPRequest;
 import org.cybergarage.http.HTTPResponse;
 import org.cybergarage.http.HTTPServerList;
 import org.cybergarage.http.HTTPStatus;
+import org.cybergarage.net.HostInterface;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -59,6 +61,7 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
 //        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
 //            throw new UnsupportedOperationException("You CAN'T start SmbStreamTransfer in UI thread");
 //        }
+        HostInterface.USE_ONLY_IPV4_ADDR = true;
         int retryCnt = 0;
         int port = getHTTPPort();
         HTTPServerList hsl = getHttpServerList();
@@ -72,23 +75,39 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
         }
         hsl.addRequestListener(this);
         hsl.start();
-        bindIP = hsl.getHTTPServer(0).getBindAddress();
-        Log.d(TAG, "SERVER = " + bindIP + ":" + port);
+
+        String ip = hsl.getHTTPServer(0).getBindAddress();
+        if (ip != null && ip.contains("/")) {
+            ip = ip.replaceAll("/", "");
+        }
+        setBindIP(ip);
+        if (SambaHelper.DEBUG) {
+            Log.d(TAG, "SERVER:  ip=" + ip + "  bindIP=" + bindIP + "   port=" + port + "   bindPort=" + bindPort);
+        }
     }
 
     @Override
     public void httpRequestRecieved(HTTPRequest httpReq) {
         String uri = httpReq.getURI();
-        if (uri.startsWith(CONTENT_EXPORT_URI) == false) {
+        String filePaths = cropURL(uri);
+        if (SambaHelper.DEBUG) {
+            Log.d(TAG, "httpRequestRecieved uri=" + uri + "   filePaths=" + filePaths);
+        }
+        if (filePaths == null || !filePaths.startsWith(SambaHelper.SMB_URL_LAN)) {
+            if (SambaHelper.DEBUG) {
+                Log.d(TAG, "httpRequestRecieved NOT AN SAMBA URL");
+            }
             httpReq.returnBadRequest();
             return;
         }
-        String filePaths = cropURL(uri);
         try {
             SmbFile file = new SmbFile(filePaths);
             long contentLen = file.length();
             String contentType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(filePaths));
             InputStream contentIn = file.getInputStream();
+            if (SambaHelper.DEBUG) {
+                Log.d(TAG, "httpRequestRecieved contentLen=" + contentLen + "  contentType=" + contentType + "   name=" + file.getName() + "     ins=" + (contentIn != null));
+            }
             if (contentLen <= 0 || contentType.length() <= 0
                     || contentIn == null) {
                 httpReq.returnBadRequest();
@@ -103,22 +122,37 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
             contentIn.close();
         } catch (MalformedURLException e) {
             httpReq.returnBadRequest();
+            printException(e);
             return;
         } catch (SmbException e) {
             httpReq.returnBadRequest();
+            printException(e);
             return;
         } catch (IOException e) {
             httpReq.returnBadRequest();
+            printException(e);
             return;
         }
     }
 
+    private void printException(Exception e) {
+        e.printStackTrace();
+        if (SambaHelper.DEBUG) {
+            Log.d(TAG, "printException " + e.getMessage());
+        }
+    }
 
     public final static String cropURL(String url) {
+//        if (SambaHelper.DEBUG) {
+//            Log.d(TAG, "cropURL " + url);
+//        }
         try {
             url = URLDecoder.decode(url, "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             e1.printStackTrace();
+        }
+        if (url.length() <= CONTENT_EXPORT_URI.length()) {
+            return url;
         }
         String filePaths = SambaHelper.SMB_URL_LAN + url.substring(CONTENT_EXPORT_URI.length());
         int indexOf = filePaths.indexOf("&");
@@ -129,15 +163,18 @@ public class SmbStreamTransfer extends Thread implements org.cybergarage.http.HT
     }
 
     public final static String wrapURL(String url) {
-        StringBuilder builder = new StringBuilder("http://").append(bindIP).append(":").append(bindPort).append(CONTENT_EXPORT_URI);
-        url = url.substring(SambaHelper.SMB_URL_LAN.length());
-        builder.append(url);
         try {
+            url = url.substring(SambaHelper.SMB_URL_LAN.length());
             url = URLEncoder.encode(url, "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return url;
+        StringBuilder builder = new StringBuilder("http://").append(bindIP).append(File.pathSeparator).append(bindPort).append(CONTENT_EXPORT_URI);
+        builder.append(url);
+        if (SambaHelper.DEBUG) {
+            Log.d(TAG, "wrapURL " + url + "  " + builder.toString());
+        }
+        return builder.toString();
     }
 
     public void stopTransfer() {

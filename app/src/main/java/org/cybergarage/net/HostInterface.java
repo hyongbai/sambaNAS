@@ -25,6 +25,8 @@
 
 package org.cybergarage.net;
 
+import org.cybergarage.util.Debug;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -33,8 +35,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
-
-import org.cybergarage.util.Debug;
 
 public class HostInterface
 {
@@ -78,6 +78,7 @@ public class HostInterface
 	
 	private final static boolean isUsableAddress(InetAddress addr)
 	{
+
 		if (USE_LOOPBACK_ADDR == false) {
 			if (addr.isLoopbackAddress() == true)
 				return false;
