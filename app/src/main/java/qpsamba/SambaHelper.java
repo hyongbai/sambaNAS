@@ -25,22 +25,21 @@ public class SambaHelper {
     public final static boolean DEBUG = true;
     public final static String SMB_URL_LAN = "smb://";
     public final static String SMB_URL_WORKGROUP = "smb://workgroup/";
-    public static final String VIDEOS = "_mp4_3gp_mkv_mov_avi_rmvb_wav_m3u8_";
     public static final String CONTENT_EXPORT_URI = "/smb=";
 
     public final static List<SmbFile> listFiles(IConfig config, String fullPath) throws Exception {
-        SmbFile file = new SmbFile(SambaUtil.getSmbFullURL(config, fullPath));
+        SmbFile file = new SmbFile(SambaUtil.wrapSmbFullURL(config, fullPath));
         return new ArrayList<>(Arrays.asList(file.listFiles()));
     }
 
     public final static boolean upload(IConfig config, String localPath, String remoteFolder) throws Exception {
         File localFile = new File(localPath);
-        String remoteFilePath = SambaUtil.wrapSmbPath(remoteFolder, localFile.getName());
-        remoteFilePath = SambaUtil.getSmbFullURL(config, remoteFilePath);
+        String remoteFilePath = SambaUtil.wrapSmbFileUrl(remoteFolder, localFile.getName());
+        remoteFilePath = SambaUtil.wrapSmbFullURL(config, remoteFilePath);
         SmbFile remoteFile = new SmbFile(remoteFilePath);
         if (remoteFile.exists()) {
-            remoteFilePath = SambaUtil.wrapSmbPath(remoteFolder, SambaUtil.autoRename(localFile.getName()));
-            remoteFilePath = SambaUtil.getSmbFullURL(config, remoteFilePath);
+            remoteFilePath = SambaUtil.wrapSmbFileUrl(remoteFolder, SambaUtil.autoRename(localFile.getName()));
+            remoteFilePath = SambaUtil.wrapSmbFullURL(config, remoteFilePath);
             remoteFile = new SmbFile(remoteFilePath);
         }
         if (DEBUG) {
@@ -58,7 +57,7 @@ public class SambaHelper {
     }
 
     public final static boolean download(IConfig config, String localPath, String remotePath) throws Exception {
-        remotePath = SambaUtil.getSmbFullURL(config, remotePath);
+        remotePath = SambaUtil.wrapSmbFullURL(config, remotePath);
         if (DEBUG) {
             Log.d(TAG, "download remotePath=" + remotePath + "   local=" + localPath + "  config = " + config);
         }
@@ -107,11 +106,10 @@ public class SambaHelper {
                 //PROGRESS
                 final float progress = (totalSize <= 0) ? -1 : (uploaded * 100) / totalSize;
                 if (DEBUG) {
-                    Log.d(TAG, "writeAndCloseStream progress:" + progress + "   uploaded=" + uploaded + "    speed=" + speed + "/" + avegSpeed);
+                    Log.d(TAG, "writeAndCloseStream progress:" + progress + "   transfered=" + uploaded + "    speed=" + speed + "/" + avegSpeed);
                 }
 
-                //TODO add progress while uploading
-                //TODO upload speed!!
+                //TODO add progress while transfering
             }
         } catch (Exception e) {
             throw e;
@@ -123,8 +121,8 @@ public class SambaHelper {
     }
 
     public final static boolean createFolder(IConfig config, String parent, String name) throws Exception {
-        parent = SambaUtil.getSmbFullURL(config, parent);
-        String mURL = SambaUtil.wrapSmbPath(parent, name);
+        parent = SambaUtil.wrapSmbFullURL(config, parent);
+        String mURL = SambaUtil.wrapSmbFileUrl(parent, name);
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "createFolder      URL=" + mURL + " parent=" + parent + " name=" + name);
         }
@@ -138,7 +136,7 @@ public class SambaHelper {
 
 
     public final static boolean delete(IConfig config, String path) throws Exception {
-        path = SambaUtil.getSmbFullURL(config, path);
+        path = SambaUtil.wrapSmbFullURL(config, path);
         if (DEBUG) {
             Log.d(TAG, "config=" + config + "delete      URL=" + path);
         }

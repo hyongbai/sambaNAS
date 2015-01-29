@@ -14,18 +14,24 @@ import java.net.URLEncoder;
 public class SambaUtil {
 
 
+    public static final String SUPPORTED_VIDEOS = "_mp4_3gp_mkv_mov_avi_rmvb_wav_m3u8_";
+
     public static final String getVideoMimeType(String path) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(path);
         if (TextUtils.isEmpty(extension)) {
             return null;
         }
         extension = extension.toLowerCase();
-        if (!SambaHelper.VIDEOS.contains(extension)) {
+        if (!SambaUtil.SUPPORTED_VIDEOS.contains(extension)) {
             return null;
         }
         return new StringBuilder("video/").append(extension).toString();
     }
 
+    /**
+     * For example, if path is xxx/yyy/zzz/AAA.bbb<p/>
+     * It'll return AAA.bbb
+     */
     public final static String getFileName(String path) {
         if (path == null) {
             return path;
@@ -40,7 +46,11 @@ public class SambaUtil {
         return path.substring(index + 1);
     }
 
-    public final static String getNameWithoutSuffix(String path) {
+    /**
+     * For example, if path is xxx/yyy/zzz/AAA.bbb<p/>
+     * It'll return AAA
+     */
+    public final static String getNakedName(String path) {
         path = getFileName(path);
         if (path == null) {
             return path;
@@ -56,7 +66,7 @@ public class SambaUtil {
     }
 
     public final static String autoRename(String name) {
-        String nakedName = getNameWithoutSuffix(name);
+        String nakedName = getNakedName(name);
         String suffix = name.replace(nakedName, "");
         return new StringBuilder(nakedName).append("-").append(System.currentTimeMillis()).append(suffix).toString();
     }
@@ -75,7 +85,7 @@ public class SambaUtil {
         return builder.toString();
     }
 
-    public final static String wrapSmbPath(String parent, String name) {
+    public final static String wrapSmbFileUrl(String parent, String name) {
         if (TextUtils.isEmpty(parent) || TextUtils.isEmpty(name)) {
             return null;
         }
@@ -84,7 +94,7 @@ public class SambaUtil {
             builder.append("/");
         }
         if (name.endsWith("/")) {
-            int index = name.lastIndexOf("/");
+            int index = name.length() - 1;
             name = name.substring(0, index - 1);
         }
         builder.append(name);
@@ -92,15 +102,15 @@ public class SambaUtil {
     }
 
     public final static String getSmbRootURL(IConfig config) {
-        String simpleUrl = new StringBuilder("smb://").append(config.host).append("/").toString();
-        return getSmbFullURL(config, simpleUrl);
+        String simpleUrl = new StringBuilder(SambaHelper.SMB_URL_LAN).append(config.host).append("/").toString();
+        return wrapSmbFullURL(config, simpleUrl);
     }
 
     /**
      * According to  <a href="https://jcifs.samba.org/src/docs/api/jcifs/smb/SmbFile.html">SMB URL Examples</a> :<br>
      * smb://domain;username:password@server/{PATH}
      */
-    public final static String getSmbFullURL(IConfig config, String url) {
+    public final static String wrapSmbFullURL(IConfig config, String url) {
         if (config == null || TextUtils.isEmpty(url)) {
             return url;
         }
@@ -118,25 +128,36 @@ public class SambaUtil {
         if (url.contains(wrappedHost.toString())) {
             return url;
         }
-        //TODO add port or something else
-        url = url.replace(config.host, wrappedHost.toString());
+        if (url.startsWith(SambaHelper.SMB_URL_LAN)) {
+            url = url.substring(SambaHelper.SMB_URL_LAN.length());
+        }
+        int index = url.indexOf("/");
+        int len = url.length();
+        if (index >= 0 && index < len) {
+            url = (index == len - 1) ? "" : url.substring(index + 1);
+        }
+        wrappedHost.append("/").append(url);
+        url = new StringBuilder(SambaHelper.SMB_URL_LAN).append(wrappedHost).toString();
         return url;
     }
 
 
+    /**
+     * Turn from <b>"/smb=XXX"</b> to <b>"smb://XXX"</b>
+     */
     public final static String cropStreamSmbURL(String url) {
-//        if (SambaHelper.DEBUG) {
-//            Log.d(TAG, "cropStreamSmbURL " + url);
-//        }
+        if (TextUtils.isEmpty(url)) {
+            return null;
+        }
         try {
             url = URLDecoder.decode(url, "UTF-8");
         } catch (UnsupportedEncodingException e1) {
             e1.printStackTrace();
         }
-        if (url.length() <= SambaHelper.CONTENT_EXPORT_URI.length()) {
+        if (!url.startsWith(SambaHelper.CONTENT_EXPORT_URI)) {
             return url;
         }
-        if (!url.startsWith(SambaHelper.CONTENT_EXPORT_URI)) {
+        if (url.length() <= SambaHelper.CONTENT_EXPORT_URI.length()) {
             return url;
         }
         String filePaths = SambaHelper.SMB_URL_LAN + url.substring(SambaHelper.CONTENT_EXPORT_URI.length());
@@ -147,7 +168,16 @@ public class SambaUtil {
         return filePaths;
     }
 
+    /**
+     * Turn from <b>"smb://XXX"</b> to <b>"http://ip:port/smb=XXX"</b>
+     */
     public final static String wrapStreamSmbURL(String url, String ip, int port) {
+        if (TextUtils.isEmpty(url)) {
+            return null;
+        }
+        if (!url.startsWith(SambaHelper.SMB_URL_LAN)) {
+            return null;
+        }
         try {
             url = url.substring(SambaHelper.SMB_URL_LAN.length());
             url = URLEncoder.encode(url, "UTF-8");
@@ -162,7 +192,6 @@ public class SambaUtil {
         builder.append(url);
         return builder.toString();
     }
-
 
 //    public static final String getLocalIpAddress() {
 //        try {

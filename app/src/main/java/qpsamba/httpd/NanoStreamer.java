@@ -11,7 +11,6 @@ import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
-import qpsamba.SambaHelper;
 import qpsamba.SambaUtil;
 
 /**
@@ -20,7 +19,6 @@ import qpsamba.SambaUtil;
  * is protected
  */
 public class NanoStreamer extends NanoHTTPD implements IStreamer {
-    public final static String TAG = SambaHelper.TAG;
     public final static int DEFAULT_SERVER_PORT = 8000;
     private int serverPort;
 
@@ -31,42 +29,6 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
     public NanoStreamer(int port) {
         super(null, port);
         this.serverPort = port;
-    }
-
-    @Override
-    public Response serve(IHTTPSession session) {
-        Map<String, String> headers = session.getHeaders();
-        String uri = session.getUri();
-        return respond(headers, uri);
-    }
-
-    private Response respond(Map<String, String> headers, String uri) {
-        String smbUri = SambaUtil.cropStreamSmbURL(uri);
-        String mimeTypeForFile = SambaUtil.getVideoMimeType(uri);
-        Response response = null;
-        try {
-            SmbFile smbFile = new SmbFile(smbUri);
-            InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
-            response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return response != null ? response : createResponse(
-                Response.Status.NOT_FOUND, MIME_PLAINTEXT,
-                "Error 404, file not found.");
-    }
-
-    // Announce that the file server accepts partial content requests
-    private Response createResponse(Response.Status status, String mimeType, String message) {
-        Response res = new Response(status, mimeType, message);
-        res.addHeader("Accept-Ranges", "bytes");
-        return res;
-    }
-
-    private Response createNonBufferedResponse(Response.Status status, String mimeType, InputStream message, Long len) {
-        Response res = new StreamResponse(status, mimeType, message, len);
-        res.addHeader("Accept-Ranges", "bytes");
-        return res;
     }
 
     @Override
@@ -91,6 +53,42 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
     @Override
     public String getIp() {
         return "127.0.0.1";
+    }
+
+    @Override
+    public Response serve(IHTTPSession session) {
+        Map<String, String> headers = session.getHeaders();
+        String uri = session.getUri();
+        return respond(headers, uri);
+    }
+
+    private Response respond(Map<String, String> headers, String uri) {
+        String mimeTypeForFile = SambaUtil.getVideoMimeType(uri);
+        String smbUri = SambaUtil.cropStreamSmbURL(uri);
+        Response response = null;
+        try {
+            SmbFile smbFile = new SmbFile(smbUri);
+            InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
+            response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return response != null ? response : createResponse(
+                Response.Status.NOT_FOUND, MIME_PLAINTEXT,
+                "Error 404, file not found.");
+    }
+
+    // Announce that the file server accepts partial content requests
+    private Response createResponse(Response.Status status, String mimeType, String message) {
+        Response res = new Response(status, mimeType, message);
+        res.addHeader("Accept-Ranges", "bytes");
+        return res;
+    }
+
+    private Response createNonBufferedResponse(Response.Status status, String mimeType, InputStream message, Long len) {
+        Response res = new StreamResponse(status, mimeType, message, len);
+        res.addHeader("Accept-Ranges", "bytes");
+        return res;
     }
 
     private Response serveSmbFile(String smbFileUrl, Map<String, String> header, InputStream is, SmbFile smbFile, String mime) {
@@ -143,7 +141,6 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
         } catch (IOException ioe) {
             res = createResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "FORBIDDEN: Reading file failed.");
         }
-
         return res;
     }
 
@@ -154,7 +151,6 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
             super(status, mimeType, data);
             this.available = available;
         }
-
 
         @Override
         protected void sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, Map<String, String> header, int size) {

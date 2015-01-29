@@ -209,7 +209,7 @@ public class MainActivity extends SambaActivity {
                     }
                 }
         );
-//        curRemoteFolder = SambaUtil.getSmbFullURL(mConfig, "/");
+//        curRemoteFolder = SambaUtil.wrapSmbFullURL(mConfig, "/");
 //        loadToSpinner(curRemoteFolder);
     }
 

@@ -239,7 +239,7 @@ public class SambaActivity extends Activity {
                     handleException(e);
                 }
                 onRemoteFolderChange(curRemoteFolder, result);
-                updateResult("createFolder", SambaUtil.wrapSmbPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
+                updateResult("createFolder", SambaUtil.wrapSmbFileUrl(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
             }
         }).start();
     }
