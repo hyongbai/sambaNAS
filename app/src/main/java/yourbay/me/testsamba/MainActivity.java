@@ -21,9 +21,9 @@ import android.widget.Toast;
 import java.io.File;
 
 import jcifs.smb.SmbFile;
-import yourbay.me.testsamba.samba.IConfig;
-import yourbay.me.testsamba.samba.OnConfigListener;
-import yourbay.me.testsamba.samba.SambaUtil;
+import qpsamba.IConfig;
+import qpsamba.IConfig.OnConfigListener;
+import qpsamba.SambaUtil;
 import yourbay.me.testsamba.util.DialogUtil;
 import yourbay.me.testsamba.util.IntentUtils;
 import yourbay.me.testsamba.util.UriUtil;
@@ -209,7 +209,7 @@ public class MainActivity extends SambaActivity {
                     }
                 }
         );
-//        curRemoteFolder = SambaUtil.getFullURL(mConfig, "/");
+//        curRemoteFolder = SambaUtil.getSmbFullURL(mConfig, "/");
 //        loadToSpinner(curRemoteFolder);
     }
 

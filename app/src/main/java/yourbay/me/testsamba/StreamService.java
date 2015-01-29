@@ -4,8 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import yourbay.me.testsamba.samba.httpd.IStreamer;
-import yourbay.me.testsamba.samba.httpd.NanoStreamer;
+import qpsamba.httpd.IStreamer;
+import qpsamba.httpd.NanoStreamer;
 
 /**
  * Created by ram on 15/1/28.

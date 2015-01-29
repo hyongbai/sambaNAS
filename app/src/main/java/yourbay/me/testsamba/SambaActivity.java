@@ -12,9 +12,9 @@ import java.util.Map;
 
 import jcifs.smb.SmbAuthException;
 import jcifs.smb.SmbFile;
-import yourbay.me.testsamba.samba.IConfig;
-import yourbay.me.testsamba.samba.SambaHelper;
-import yourbay.me.testsamba.samba.SambaUtil;
+import qpsamba.IConfig;
+import qpsamba.SambaHelper;
+import qpsamba.SambaUtil;
 
 /**
  * Created by ram on 15/1/20.
@@ -225,7 +225,7 @@ public class SambaActivity extends Activity {
     }
 
     protected void listRoot() {
-        curRemoteFolder = SambaUtil.getRootURL(mConfig);
+        curRemoteFolder = SambaUtil.getSmbRootURL(mConfig);
     }
 
     protected void createFolder(final String name) {
@@ -239,7 +239,7 @@ public class SambaActivity extends Activity {
                     handleException(e);
                 }
                 onRemoteFolderChange(curRemoteFolder, result);
-                updateResult("createFolder", SambaUtil.wrapPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
+                updateResult("createFolder", SambaUtil.wrapSmbPath(curRemoteFolder, name) + "       " + String.valueOf(result).toUpperCase());
             }
         }).start();
     }
