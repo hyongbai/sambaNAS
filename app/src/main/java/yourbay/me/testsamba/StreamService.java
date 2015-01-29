@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import qpsamba.httpd.IStreamer;
 import qpsamba.httpd.NanoStreamer;
 
 /**
@@ -12,14 +11,12 @@ import qpsamba.httpd.NanoStreamer;
  */
 public class StreamService extends Service {
 
-    public static IStreamer iStreamer;
 
     @Override
     public void onCreate() {
         super.onCreate();
 //        iStreamer = new CyberSmbStreamer();
-        iStreamer = new NanoStreamer();
-        iStreamer.start();
+        NanoStreamer.INSTANCE().start();
     }
 
     @Override
@@ -30,6 +27,6 @@ public class StreamService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        iStreamer.stopStream();
+        NanoStreamer.INSTANCE().stopStream();
     }
 }

@@ -14,7 +14,7 @@ import java.net.URLEncoder;
 public class SambaUtil {
 
 
-    public static final String SUPPORTED_VIDEOS = "_mp4_3gp_mkv_mov_avi_rmvb_wav_m3u8_";
+    public static final String SUPPORTED_VIDEOS = "_mp4_3gp_";//mkv_mov_avi_rmvb_wav_m3u8_
 
     public static final String getVideoMimeType(String path) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(path);

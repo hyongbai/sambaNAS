@@ -19,16 +19,28 @@ import qpsamba.SambaUtil;
  * is protected
  */
 public class NanoStreamer extends NanoHTTPD implements IStreamer {
-    public final static int DEFAULT_SERVER_PORT = 8000;
+    public final static int DEFAULT_SERVER_PORT = 12315;
     private int serverPort;
+    private static NanoStreamer streamer;
 
-    public NanoStreamer() {
+    private NanoStreamer() {
         this(DEFAULT_SERVER_PORT);
     }
 
-    public NanoStreamer(int port) {
+    private NanoStreamer(int port) {
         super(null, port);
         this.serverPort = port;
+    }
+
+    public final static NanoStreamer INSTANCE() {
+        if (streamer == null) {
+            synchronized (NanoStreamer.class) {
+                if (streamer == null) {
+                    streamer = new NanoStreamer();
+                }
+            }
+        }
+        return streamer;
     }
 
     @Override

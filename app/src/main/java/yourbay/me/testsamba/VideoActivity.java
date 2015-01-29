@@ -15,6 +15,7 @@ import android.view.SurfaceView;
 import java.io.FileDescriptor;
 
 import qpsamba.SambaUtil;
+import qpsamba.httpd.NanoStreamer;
 import yourbay.me.testsamba.util.IntentUtils;
 
 /**
@@ -114,7 +115,7 @@ public class VideoActivity extends Activity {
         try {
             String url = getIntent().getStringExtra(ACTION_KEY_URL);
 //            url = SambaUtil.wrapStreamSmbURL(url, TransferService.iStreamer.getIp(), TransferService.iStreamer.getPort());
-            url = SambaUtil.wrapStreamSmbURL(url, "127.0.0.1", StreamService.iStreamer.getPort());
+            url = SambaUtil.wrapStreamSmbURL(url, NanoStreamer.INSTANCE().getIp(), NanoStreamer.INSTANCE().getPort());
             mURL = url;
             final Object source = url;
             new Thread() {
