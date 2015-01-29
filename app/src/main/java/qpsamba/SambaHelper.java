@@ -84,8 +84,8 @@ public class SambaHelper {
         int length;
         float uploaded = 0f;
         final long startMills = System.currentTimeMillis();
-        long lastMills = startMills;
         final long LOG_PRINT_DURATION_DIVIDER = 500;
+        long lastMills = startMills;
         try {
             while ((length = ins.read(tmp)) != -1) {
                 outs.write(tmp, 0, length);

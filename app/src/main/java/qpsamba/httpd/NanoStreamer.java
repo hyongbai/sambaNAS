@@ -67,9 +67,11 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
         String smbUri = SambaUtil.cropStreamSmbURL(uri);
         Response response = null;
         try {
-            SmbFile smbFile = new SmbFile(smbUri);
-            InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
-            response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
+            if (SambaUtil.isSmbUrl(smbUri)) {
+                SmbFile smbFile = new SmbFile(smbUri);
+                InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
+                response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

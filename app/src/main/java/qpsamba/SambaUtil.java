@@ -193,6 +193,13 @@ public class SambaUtil {
         return builder.toString();
     }
 
+    public final static boolean isSmbUrl(String url) {
+        if (TextUtils.isEmpty(url)) {
+            return false;
+        }
+        return url.trim().startsWith(SambaHelper.SMB_URL_LAN);
+    }
+
 //    public static final String getLocalIpAddress() {
 //        try {
 //            Enumeration<NetworkInterface> infos = NetworkInterface
