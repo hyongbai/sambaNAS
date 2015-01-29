@@ -115,10 +115,6 @@ public class VideoActivity extends Activity {
             String url = getIntent().getStringExtra(ACTION_KEY_URL);
             url = SambaUtil.wrapStreamURL(url, TransferService.iStreamer.getIp(), TransferService.iStreamer.getPort());
             mURL = url;
-//            FileDescriptor fd = null;
-//            fd = new FileInputStream(URL_TEST_LOCAL_3GP_PATH).getFD();
-//            ParcelFileDescriptor pfd = SFileDescriptorCreator.createDescriptor(url);
-//            fd = pfd.getFileDescriptor();
             final Object source = url;
             new Thread() {
                 @Override

@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Map;
 
+import fi.iki.elonen.NanoHTTPD;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import yourbay.me.testsamba.samba.SambaHelper;
@@ -68,143 +69,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
                 "Error 404, file not found.");
     }
 
-
-//    private Response serveFile(Map<String, String> header, String file, String mime) {
-//        Response res;
-//        try {
-//            InputStream cInputStream;
-////            cInputStream = new BufferedInputStream(//
-////                    new SmbFile("smb://;ram:1234@192.168.2.79/samba/1420027389002.jpg")//
-////                            .getInputStream());
-////            cInputStream = new FileInputStream("/sdcard/DCIM/Camera/IMG_20150114_231632.jpg");
-//            cInputStream = new FileInputStream(VideoActivity.URL_TEST_LOCAL_VIDEO_PATH);
-////            mime = "image/jpeg";
-//            mime = "video/mp4";
-//            long fileLen = cInputStream.available();
-//            String etag = Integer.toHexString((file + "" + fileLen).hashCode());
-//            long startFrom = 0;
-//            long endAt = -1;
-//            String range = header.get("range");
-//            if (range != null) {
-//                if (range.startsWith("bytes=")) {
-//                    range = range.substring("bytes=".length());
-//                    int minus = range.indexOf('-');
-//                    try {
-//                        if (minus > 0) {
-//                            startFrom = Long.parseLong(range
-//                                    .substring(0, minus));
-//                            endAt = Long.parseLong(range.substring(minus + 1));
-//                        }
-//                    } catch (NumberFormatException ignored) {
-//                        ignored.printStackTrace();
-//                    }
-//                }
-//            }
-//
-//            if (range != null && startFrom >= 0) {
-//                if (startFrom >= fileLen) {
-//                    res = createResponse(Response.Status.RANGE_NOT_SATISFIABLE,
-//                            MIME_PLAINTEXT, "");
-//                    res.addHeader("Content-Range", "bytes 0-0/" + fileLen);
-//                    res.addHeader("ETag", etag);
-//                } else {
-//                    if (endAt < 0) {
-//                        endAt = fileLen - 1;
-//                    }
-//                    long newLen = endAt - startFrom + 1;
-//                    if (newLen < 0) {
-//                        newLen = 0;
-//                    }
-//                    final long dataLen = newLen;
-//                    cInputStream.skip(startFrom);
-//                    res = createResponse(Response.Status.PARTIAL_CONTENT, mime,
-//                            cInputStream);
-//                    res.addHeader("Content-Length", "" + dataLen);
-//                    res.addHeader("Content-Range", "bytes " + startFrom + "-"
-//                            + endAt + "/" + fileLen);
-//                    res.addHeader("ETag", etag);
-//                }
-//            } else {
-//                if (etag.equals(header.get("if-none-match")))
-//                    res = createResponse(Response.Status.NOT_MODIFIED, mime, "");
-//                else {
-//                    res = createResponse(Response.Status.OK, mime, cInputStream);
-//                    res.addHeader("Content-Length", "" + fileLen);
-//                    res.addHeader("ETag", etag);
-//                }
-//            }
-//        } catch (Exception ioe) {
-//            ioe.printStackTrace();
-//            res = createResponse(Response.Status.FORBIDDEN,
-//                    MIME_PLAINTEXT, "FORBIDDEN: Reading file failed.");
-//        }
-//        return res;
-//    }
-
-
-//    private Response serveFile(Map<String, String> header, String filePath, String mime) {
-//        Response res;
-//        try {
-//            if (filePath == null || !filePath.startsWith(SambaHelper.SMB_URL_LAN)) {
-//                return null;
-//            }
-//            SmbFile file = new SmbFile(filePath);
-//            if (SambaHelper.DEBUG) {
-//                Log.d(SambaHelper.TAG, "serveFile headers=" + file.length());
-//            }
-//            InputStream cInputStream = file.getInputStream();
-//            long fileLength = cInputStream.available();
-//            String eTag = Integer.toHexString((filePath + "" + fileLength).hashCode());
-//            long rangeStart = 0;
-//            long rangeEnd = -1;
-//            String range = header.get("range");
-//            if (range != null) {
-//                if (range.startsWith("bytes=")) {
-//                    range = range.substring("bytes=".length());
-//                    int minus = range.indexOf('-');
-//                    try {
-//                        if (minus > 0) {
-//                            rangeStart = Long.parseLong(range.substring(0, minus));
-//                            rangeEnd = Long.parseLong(range.substring(minus + 1));
-//                        }
-//                    } catch (NumberFormatException ignored) {
-//                        ignored.printStackTrace();
-//                    }
-//                }
-//            }
-//
-//            if (rangeStart >= fileLength || rangeStart < 0) {
-//                rangeStart = 0;
-//            }
-//
-//            if (rangeEnd < 0 || rangeEnd >= fileLength) {
-//                rangeEnd = fileLength - 1;
-//            }
-//
-//            long rangeLength = rangeEnd - rangeStart + 1;
-//            if (rangeLength < 0) {
-//                rangeLength = 0;
-//            }
-//            cInputStream.skip(rangeStart);
-//            res = createResponse(Response.Status.PARTIAL_CONTENT, mime, cInputStream);
-//            res.addHeader("Content-Length", "" + rangeLength);
-//            res.addHeader("Content-Range", "bytes " + rangeStart + "-" + rangeEnd + "/" + fileLength);
-//            res.addHeader("ETag", eTag);
-//        } catch (IOException ioe) {
-//            ioe.printStackTrace();
-//            res = createResponse(Response.Status.FORBIDDEN,
-//                    MIME_PLAINTEXT, "FORBIDDEN: Reading file failed.");
-//        }
-//        return res;
-//    }
-
-    // Announce that the file server accepts partial content requests
-    private Response createResponse(Response.Status status, String mimeType, InputStream inputStream) {
-        Response res = new Response(status, mimeType, inputStream);
-        res.addHeader("Accept-Ranges", "bytes");
-        return res;
-    }
-
     // Announce that the file server accepts partial content requests
     private Response createResponse(Response.Status status, String mimeType, String message) {
         Response res = new Response(status, mimeType, message);
@@ -213,7 +77,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
     }
 
     private Response createNonBufferedResponse(Response.Status status, String mimeType, InputStream message, Long len) {
-//        Response res = new Response(status, mimeType, message);
         Response res = new NonBufferedResponse(status, mimeType, message, len);
         res.addHeader("Accept-Ranges", "bytes");
         return res;
@@ -265,6 +128,10 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         return getLocalIpAddress();
     }
 
+    ////          cInputStream = new BufferedInputStream(//
+////          new SmbFile("smb://;ram:1234@192.168.2.79/samba/1420027389002.jpg").getInputStream());
+////          cInputStream = new FileInputStream("/sdcard/DCIM/Camera/IMG_20150114_231632.jpg");
+//            cInputStream = new FileInputStream(VideoActivity.URL_TEST_LOCAL_VIDEO_PATH);
     private Response serveSmbFile(String smbFileUrl, Map<String, String> header, InputStream is, SmbFile smbFile, String mime) {
         Response res;
         try {
@@ -291,9 +158,10 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
 
             // Change return code and add Content-Range header when skipping is requested
             long fileLen = smbFile.length();
+            Log.d(TAG, "fileLen fileLen=" + fileLen + "/available=" + is.available() + " header=" + Arrays.toString(header.entrySet().toArray()));
             if (range != null && startFrom >= 0) {
                 if (startFrom >= fileLen) {
-                    res = createResponse(Response.Status.RANGE_NOT_SATISFIABLE, LatestNanoHTTPD.MIME_PLAINTEXT, "");
+                    res = createResponse(Response.Status.RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "");
                     res.addHeader("Content-Range", "bytes 0-0/" + fileLen);
                     res.addHeader("ETag", etag);
                 } else {
@@ -321,58 +189,98 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
                 }
             }
         } catch (IOException ioe) {
-            res = createResponse(Response.Status.FORBIDDEN, LatestNanoHTTPD.MIME_PLAINTEXT, "FORBIDDEN: Reading file failed.");
+            res = createResponse(Response.Status.FORBIDDEN, MIME_PLAINTEXT, "FORBIDDEN: Reading file failed.");
         }
 
         return res;
     }
 
-    public static class NonBufferedResponse extends NanoHTTPD.Response {
-        private Long available;
+    public static class NonBufferedResponse extends Response {
+        private long available;
 
         /**
          * Basic constructor.
          */
-        public NonBufferedResponse(Status status, String mimeType, InputStream data, Long available) {
+        public NonBufferedResponse(Status status, String mimeType, InputStream data, long available) {
             super(status, mimeType, data);
             this.available = available;
         }
 
 
         @Override
-        protected void sendAsFixedLength(OutputStream outputStream, PrintWriter pw) throws IOException {
-            // Need to set Content-Length as range END - START
-            long pending = (long) (data != null ? available : 0); // This is to support partial sends, see serveFile()
+        protected void sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, Map<String, String> header, int size) {
+//            super.sendContentLengthHeaderIfNotAlreadyPresent(pw, header, size);
+            long pending = (long) (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
             String string = header.get("Content-Range"); // Such as bytes 203437551-205074073/205074074
-            if(string != null) {
-                if(string.startsWith("bytes ")) {
+            if (string != null) {
+                if (string.startsWith("bytes ")) {
                     string = string.substring("bytes ".length());
                 }
                 Long start = Long.parseLong(string.split("-")[0]);
-                pw.print("Content-Length: "+ (pending - start) +"\r\n");
+                pw.print("Content-Length: " + (pending - start) + "\r\n");
             } else {
-                pw.print("Content-Length: "+pending+"\r\n");
+                pw.print("Content-Length: " + pending + "\r\n");
             }
+        }
 
+        @Override
+        protected void sendAsFixedLength(OutputStream outputStream, int pending) throws IOException {
+//            super.sendAsFixedLength(outputStream, pending);
+            sendAsFixedLength(outputStream);
+        }
 
-            pw.print("\r\n");
-            pw.flush();
-
-            if (requestMethod != Method.HEAD && data != null) {
+        private void sendAsFixedLength(OutputStream outputStream) throws IOException {
+            long pending = (long) (getData() != null ? available : 0);
+            if (getRequestMethod() != Method.HEAD && getData() != null) {
                 int BUFFER_SIZE = 16 * 1024;
                 byte[] buff = new byte[BUFFER_SIZE];
                 while (pending > 0) {
                     // Note the ugly cast to int to support > 2gb files. If pending < BUFFER_SIZE we can safely cast anyway.
-                    int read = data.read(buff, 0, ((pending > BUFFER_SIZE) ? BUFFER_SIZE : (int) pending));
+                    int read = getData().read(buff, 0, ((pending > BUFFER_SIZE) ? BUFFER_SIZE : (int) pending));
                     if (read <= 0) {
                         break;
                     }
                     outputStream.write(buff, 0, read);
-
                     pending -= read;
                 }
             }
         }
+
+
+//        protected void sendAsFixedLength(OutputStream outputStream, PrintWriter pw) throws IOException {
+//            // Need to set Content-Length as range END - START
+//            long pending = (long) (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
+//            String string = getHeader("Content-Range"); // Such as bytes 203437551-205074073/205074074
+////            String string = header.get("Content-Range");
+//            Log.d(TAG, "sendAsFixedLength   Content-Range=" + String.valueOf(string));
+//            if (string != null) {
+//                if (string.startsWith("bytes ")) {
+//                    string = string.substring("bytes ".length());
+//                }
+//                Long start = Long.parseLong(string.split("-")[0]);
+//                pw.print("Content-Length: " + (pending - start) + "\r\n");
+//            } else {
+//                pw.print("Content-Length: " + pending + "\r\n");
+//            }
+//
+//            pw.print("\r\n");
+//            pw.flush();
+//
+//            if (getRequestMethod() != Method.HEAD && getData() != null) {
+//                int BUFFER_SIZE = 16 * 1024;
+//                byte[] buff = new byte[BUFFER_SIZE];
+//                while (pending > 0) {
+//                    // Note the ugly cast to int to support > 2gb files. If pending < BUFFER_SIZE we can safely cast anyway.
+//                    int read = getData().read(buff, 0, ((pending > BUFFER_SIZE) ? BUFFER_SIZE : (int) pending));
+//                    if (read <= 0) {
+//                        break;
+//                    }
+//                    outputStream.write(buff, 0, read);
+//
+//                    pending -= read;
+//                }
+//            }
+//        }
 
     }
 

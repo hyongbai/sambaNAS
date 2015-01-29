@@ -56,6 +56,7 @@ public class CyberSmbStreamer extends Thread implements org.cybergarage.http.HTT
         bindPort = hTTPPort;
     }
 
+    @Override
     public void run() {
 //        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
 //            throw new UnsupportedOperationException("You CAN'T start SmbStreamTransfer in UI thread");
