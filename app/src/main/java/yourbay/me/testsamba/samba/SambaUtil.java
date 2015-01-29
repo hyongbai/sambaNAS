@@ -3,10 +3,16 @@ package yourbay.me.testsamba.samba;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
+import org.apache.http.conn.util.InetAddressUtils;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 
 import jcifs.smb.SmbFile;
 
@@ -177,6 +183,29 @@ public class SambaUtil {
             return null;
         }
         return new StringBuilder("video/").append(exten).toString();
+    }
+
+
+    public static final String getLocalIpAddress() {
+        try {
+            Enumeration<NetworkInterface> infos = NetworkInterface
+                    .getNetworkInterfaces();
+            while (infos.hasMoreElements()) {
+                NetworkInterface niFace = infos.nextElement();
+                Enumeration<InetAddress> enumIpAddr = niFace.getInetAddresses();
+                while (enumIpAddr.hasMoreElements()) {
+                    InetAddress mInetAddress = enumIpAddr.nextElement();
+                    if (!mInetAddress.isLoopbackAddress()
+                            && InetAddressUtils.isIPv4Address(mInetAddress
+                            .getHostAddress())) {
+                        return mInetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

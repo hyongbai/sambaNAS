@@ -2,8 +2,6 @@ package yourbay.me.testsamba.samba;
 
 import android.text.TextUtils;
 
-import org.json.JSONObject;
-
 /**
  * Created by ram on 15/1/19.
  */
@@ -28,8 +26,6 @@ public class IConfig {
         while (newHost.endsWith("/")) {
             newHost = newHost.substring(0, newHost.length() - 1);
         }
-//        StringBuilder builder = new StringBuilder(newHost);
-//        this.host = isWorkGroup ? builder.append("/").toString() : builder.toString();
         this.host = newHost;
     }
 
@@ -47,15 +43,15 @@ public class IConfig {
         return builder.toString();
     }
 
-    public JSONObject toJson() {
-        JSONObject jo = new JSONObject();
-        try {
-            jo.put(HOST, host);
-            jo.put(USER, user);
-            jo.put(PASSWORD, password);
-            jo.put(NICKNAME, nickName);
-        } catch (Exception e) {
-        }
-        return jo;
-    }
+//    public JSONObject toJson() {
+//        JSONObject jo = new JSONObject();
+//        try {
+//            jo.put(HOST, host);
+//            jo.put(USER, user);
+//            jo.put(PASSWORD, password);
+//            jo.put(NICKNAME, nickName);
+//        } catch (Exception e) {
+//        }
+//        return jo;
+//    }
 }

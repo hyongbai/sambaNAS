@@ -668,7 +668,7 @@ public abstract class NanoHTTPD {
 			outputStream.write(String.format("0\r\n\r\n").getBytes());
 		}
 
-		private void sendAsFixedLength(OutputStream outputStream, int pending) throws IOException {
+        protected void sendAsFixedLength(OutputStream outputStream, int pending) throws IOException {
 			if (requestMethod != Method.HEAD && data != null) {
 				int BUFFER_SIZE = 16 * 1024;
 				byte[] buff = new byte[BUFFER_SIZE];

@@ -10,7 +10,7 @@ import yourbay.me.testsamba.samba.httpd.NanoSmbStreamer;
 /**
  * Created by ram on 15/1/28.
  */
-public class TransferService extends Service {
+public class StreamService extends Service {
 
     public static IStreamer iStreamer;
 

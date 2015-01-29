@@ -2,18 +2,12 @@ package yourbay.me.testsamba.samba.httpd;
 
 import android.util.Log;
 
-import org.apache.http.conn.util.InetAddressUtils;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -53,7 +47,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
             Log.d(SambaHelper.TAG, "respond headers=" + (Arrays.toString(headers.values().toArray())) + "    smbUri=" + smbUri + "  MIME=" + mimeTypeForFile);
         }
         Response response = null;
-//        response = serveFile(headers, smbUri, mimeTypeForFile);
         try {
             SmbFile smbFile = new SmbFile(smbUri);
             InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
@@ -82,28 +75,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         return res;
     }
 
-    public static final String getLocalIpAddress() {
-        try {
-            Enumeration<NetworkInterface> infos = NetworkInterface
-                    .getNetworkInterfaces();
-            while (infos.hasMoreElements()) {
-                NetworkInterface niFace = infos.nextElement();
-                Enumeration<InetAddress> enumIpAddr = niFace.getInetAddresses();
-                while (enumIpAddr.hasMoreElements()) {
-                    InetAddress mInetAddress = enumIpAddr.nextElement();
-                    if (!mInetAddress.isLoopbackAddress()
-                            && InetAddressUtils.isIPv4Address(mInetAddress
-                            .getHostAddress())) {
-                        return mInetAddress.getHostAddress().toString();
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
     public void start() {
         try {
@@ -125,13 +96,9 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
 
     @Override
     public String getIp() {
-        return getLocalIpAddress();
+        return SambaUtil.getLocalIpAddress();
     }
 
-    ////          cInputStream = new BufferedInputStream(//
-////          new SmbFile("smb://;ram:1234@192.168.2.79/samba/1420027389002.jpg").getInputStream());
-////          cInputStream = new FileInputStream("/sdcard/DCIM/Camera/IMG_20150114_231632.jpg");
-//            cInputStream = new FileInputStream(VideoActivity.URL_TEST_LOCAL_VIDEO_PATH);
     private Response serveSmbFile(String smbFileUrl, Map<String, String> header, InputStream is, SmbFile smbFile, String mime) {
         Response res;
         try {
@@ -210,7 +177,7 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         @Override
         protected void sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, Map<String, String> header, int size) {
 //            super.sendContentLengthHeaderIfNotAlreadyPresent(pw, header, size);
-            long pending = (long) (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
+            long pending = (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
             String string = header.get("Content-Range"); // Such as bytes 203437551-205074073/205074074
             if (string != null) {
                 if (string.startsWith("bytes ")) {
@@ -230,7 +197,7 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         }
 
         private void sendAsFixedLength(OutputStream outputStream) throws IOException {
-            long pending = (long) (getData() != null ? available : 0);
+            long pending = (getData() != null ? available : 0);
             if (getRequestMethod() != Method.HEAD && getData() != null) {
                 int BUFFER_SIZE = 16 * 1024;
                 byte[] buff = new byte[BUFFER_SIZE];

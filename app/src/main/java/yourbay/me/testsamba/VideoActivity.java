@@ -113,7 +113,8 @@ public class VideoActivity extends Activity {
     private void setData() {
         try {
             String url = getIntent().getStringExtra(ACTION_KEY_URL);
-            url = SambaUtil.wrapStreamURL(url, TransferService.iStreamer.getIp(), TransferService.iStreamer.getPort());
+//            url = SambaUtil.wrapStreamURL(url, TransferService.iStreamer.getIp(), TransferService.iStreamer.getPort());
+            url = SambaUtil.wrapStreamURL(url, "127.0.0.1", StreamService.iStreamer.getPort());
             mURL = url;
             final Object source = url;
             new Thread() {
