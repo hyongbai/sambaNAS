@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import yourbay.me.testsamba.samba.httpd.IStreamer;
-import yourbay.me.testsamba.samba.httpd.NanoSmbStreamer;
+import yourbay.me.testsamba.samba.httpd.NanoStreamer;
 
 /**
  * Created by ram on 15/1/28.
@@ -18,13 +18,8 @@ public class StreamService extends Service {
     public void onCreate() {
         super.onCreate();
 //        iStreamer = new CyberSmbStreamer();
-        iStreamer = new NanoSmbStreamer();
+        iStreamer = new NanoStreamer();
         iStreamer.start();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override

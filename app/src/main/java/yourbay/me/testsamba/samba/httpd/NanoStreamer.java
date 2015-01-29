@@ -1,13 +1,11 @@
 package yourbay.me.testsamba.samba.httpd;
 
-import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -19,16 +17,16 @@ import yourbay.me.testsamba.samba.SambaUtil;
 /**
  * Created by ram on 15/1/13.
  */
-public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
+public class NanoStreamer extends NanoHTTPD implements IStreamer {
     public final static String TAG = SambaHelper.TAG;
     public final static int DEFAULT_SERVER_PORT = 8000;
     private int serverPort;
 
-    public NanoSmbStreamer() {
+    public NanoStreamer() {
         this(DEFAULT_SERVER_PORT);
     }
 
-    public NanoSmbStreamer(int port) {
+    public NanoStreamer(int port) {
         super(null, port);
         this.serverPort = port;
     }
@@ -43,9 +41,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
     private Response respond(Map<String, String> headers, String uri) {
         String smbUri = SambaUtil.cropStreamURL(uri);
         String mimeTypeForFile = SambaUtil.getVideoMimeType(uri);
-        if (SambaHelper.DEBUG) {
-            Log.d(SambaHelper.TAG, "respond headers=" + (Arrays.toString(headers.values().toArray())) + "    smbUri=" + smbUri + "  MIME=" + mimeTypeForFile);
-        }
         Response response = null;
         try {
             SmbFile smbFile = new SmbFile(smbUri);
@@ -53,9 +48,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
             response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        if (SambaHelper.DEBUG) {
-            Log.d(SambaHelper.TAG, "respond response=" + (response != null));
         }
         return response != null ? response : createResponse(
                 Response.Status.NOT_FOUND, MIME_PLAINTEXT,
@@ -70,7 +62,7 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
     }
 
     private Response createNonBufferedResponse(Response.Status status, String mimeType, InputStream message, Long len) {
-        Response res = new NonBufferedResponse(status, mimeType, message, len);
+        Response res = new StreamResponse(status, mimeType, message, len);
         res.addHeader("Accept-Ranges", "bytes");
         return res;
     }
@@ -104,7 +96,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         try {
             // Calculate etag
             String etag = Integer.toHexString((smbFile.getName() + smbFile.getLastModified() + "" + smbFile.length()).hashCode());
-
             // Support (simple) skipping:
             long startFrom = 0;
             long endAt = -1;
@@ -125,7 +116,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
 
             // Change return code and add Content-Range header when skipping is requested
             long fileLen = smbFile.length();
-            Log.d(TAG, "fileLen fileLen=" + fileLen + "/available=" + is.available() + " header=" + Arrays.toString(header.entrySet().toArray()));
             if (range != null && startFrom >= 0) {
                 if (startFrom >= fileLen) {
                     res = createResponse(Response.Status.RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "");
@@ -135,14 +125,7 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
                     if (endAt < 0) {
                         endAt = fileLen - 1;
                     }
-                    long newLen = endAt - startFrom + 1;
-                    if (newLen < 0) {
-                        newLen = 0;
-                    }
-
-                    final long dataLen = newLen;//
                     is.skip(startFrom);
-
                     res = createNonBufferedResponse(Response.Status.PARTIAL_CONTENT, mime, is, fileLen);
                     res.addHeader("Content-Range", "bytes " + startFrom + "-" + endAt + "/" + fileLen);
                     res.addHeader("ETag", etag);
@@ -162,13 +145,10 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
         return res;
     }
 
-    public static class NonBufferedResponse extends Response {
+    private static class StreamResponse extends Response {
         private long available;
 
-        /**
-         * Basic constructor.
-         */
-        public NonBufferedResponse(Status status, String mimeType, InputStream data, long available) {
+        public StreamResponse(Status status, String mimeType, InputStream data, long available) {
             super(status, mimeType, data);
             this.available = available;
         }
@@ -176,7 +156,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
 
         @Override
         protected void sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, Map<String, String> header, int size) {
-//            super.sendContentLengthHeaderIfNotAlreadyPresent(pw, header, size);
             long pending = (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
             String string = header.get("Content-Range"); // Such as bytes 203437551-205074073/205074074
             if (string != null) {
@@ -213,43 +192,6 @@ public class NanoSmbStreamer extends NanoHTTPD implements IStreamer {
             }
         }
 
-
-//        protected void sendAsFixedLength(OutputStream outputStream, PrintWriter pw) throws IOException {
-//            // Need to set Content-Length as range END - START
-//            long pending = (long) (getData() != null ? available : 0); // This is to support partial sends, see serveFile()
-//            String string = getHeader("Content-Range"); // Such as bytes 203437551-205074073/205074074
-////            String string = header.get("Content-Range");
-//            Log.d(TAG, "sendAsFixedLength   Content-Range=" + String.valueOf(string));
-//            if (string != null) {
-//                if (string.startsWith("bytes ")) {
-//                    string = string.substring("bytes ".length());
-//                }
-//                Long start = Long.parseLong(string.split("-")[0]);
-//                pw.print("Content-Length: " + (pending - start) + "\r\n");
-//            } else {
-//                pw.print("Content-Length: " + pending + "\r\n");
-//            }
-//
-//            pw.print("\r\n");
-//            pw.flush();
-//
-//            if (getRequestMethod() != Method.HEAD && getData() != null) {
-//                int BUFFER_SIZE = 16 * 1024;
-//                byte[] buff = new byte[BUFFER_SIZE];
-//                while (pending > 0) {
-//                    // Note the ugly cast to int to support > 2gb files. If pending < BUFFER_SIZE we can safely cast anyway.
-//                    int read = getData().read(buff, 0, ((pending > BUFFER_SIZE) ? BUFFER_SIZE : (int) pending));
-//                    if (read <= 0) {
-//                        break;
-//                    }
-//                    outputStream.write(buff, 0, read);
-//
-//                    pending -= read;
-//                }
-//            }
-//        }
-
     }
-
 
 }
