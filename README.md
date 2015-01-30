@@ -82,27 +82,27 @@ And for the pending  NanoHttpd using is `available` , when playing a video whose
 
 # Images
 
-> - #**Options**
+> - #**Options:**
 > 
 >  ![image](images/options.png)
 >  
-> - #**Workgroup** 
+> - #**Workgroup:** 
 > 
 >  ![image](images/choose-workgroup.png)
 >  
-> - #**Choose file/folder**
+> - #**Choose file/folder:**
 > 
 >  ![image](images/choose-file-folder.png)
 >  
-> - #**Playing Video in Samba Sharing**
+> - #**Playing Video from Samba Sharing:**
 > 
 >  ![image](images/video-play-0.png)
 >  
-> - #**Play Video with 3rd APP**
+> - #**Play Video with 3rd APP:**
 > 
 >  ![image](images/choose-3rd-app-video-play-0.png)
 >   
-> - #**Playing by QuickPic**
+> - #**Playing by QuickPic:**
 > 
 >  ![image](images/play-video-by-quickpic-0.png)
 >  
