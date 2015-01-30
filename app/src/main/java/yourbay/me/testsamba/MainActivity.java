@@ -24,6 +24,7 @@ import jcifs.smb.SmbFile;
 import qpsamba.IConfig;
 import qpsamba.IConfig.OnConfigListener;
 import qpsamba.SambaUtil;
+import qpsamba.httpd.NanoStreamer;
 import yourbay.me.testsamba.util.DialogUtil;
 import yourbay.me.testsamba.util.IntentUtils;
 import yourbay.me.testsamba.util.UriUtil;
@@ -31,6 +32,7 @@ import yourbay.me.testsamba.util.UriUtil;
 
 public class MainActivity extends SambaActivity {
     //    private final static String TAG = "MainActivity";
+    public final static String SMB_VIDEO_URL_CIF46000 = "smb://;ram:1234@RAM-ELEM/samba/videos/cif-46000.mp4";
     private Spinner fileSpinner;
     private Spinner wgSpinner;
     private TextView tvResult;
@@ -97,7 +99,9 @@ public class MainActivity extends SambaActivity {
         } else if (id == R.id.action_upload_video) {
             IntentUtils.pickupVideo(this, REQUEST_CODE_CHOOSE_IMAGE);
         } else if (id == R.id.action_play_video) {
-            playVideo(curRemoteFile);
+            playVideo(curRemoteFile, false);
+        } else if (id == R.id.action_play_video_3rd) {
+            playVideo(curRemoteFile, true);
         } else if (id == R.id.action_download) {
             download(genLocalPath(), curRemoteFile);
         } else if (id == R.id.action_clear) {
@@ -263,14 +267,18 @@ public class MainActivity extends SambaActivity {
         loadToSpinner(curRemoteFolder);
     }
 
-    private final void playVideo(String path) {
+    private final void playVideo(String path, boolean is3RD) {
         if (TextUtils.isEmpty(path)) {
-            path = "smb://;ram:1234@RAM-ELEM/samba/videos/test.mp4";
+            path = SMB_VIDEO_URL_CIF46000;
         }
         String mime = SambaUtil.getVideoMimeType(path) + "";
-        Log.d(TAG, "playVideo   " + mime);
         if (!String.valueOf(mime).toLowerCase().startsWith("video")) {
             Toast.makeText(this, "NOT a video file  " + mime, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        path = SambaUtil.wrapStreamSmbURL(path, NanoStreamer.INSTANCE().getIp(), NanoStreamer.INSTANCE().getPort());
+        if (is3RD) {
+            IntentUtils.openVideo(this, path);
             return;
         }
         Intent intent = new Intent();

@@ -1,6 +1,9 @@
 package qpsamba.httpd;
 
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +22,7 @@ import qpsamba.SambaUtil;
  * is protected
  */
 public class NanoStreamer extends NanoHTTPD implements IStreamer {
+    public final static String TAG = "NanoStreamer";
     public final static int DEFAULT_SERVER_PORT = 12315;
     private int serverPort;
     private static NanoStreamer streamer;
@@ -75,17 +79,20 @@ public class NanoStreamer extends NanoHTTPD implements IStreamer {
     }
 
     private Response respond(Map<String, String> headers, String uri) {
+        Log.d(TAG, "respond uri=" + uri);
         String mimeTypeForFile = SambaUtil.getVideoMimeType(uri);
         String smbUri = SambaUtil.cropStreamSmbURL(uri);
         Response response = null;
         try {
-            if (SambaUtil.isSmbUrl(smbUri)) {
+            if (SambaUtil.isSmbUrl(smbUri) && !TextUtils.isEmpty(mimeTypeForFile)) {
                 SmbFile smbFile = new SmbFile(smbUri);
                 InputStream copyStream = new BufferedInputStream(new SmbFileInputStream(smbFile));
                 response = serveSmbFile(smbUri, headers, copyStream, smbFile, mimeTypeForFile);
+            } else {
+                Log.e(TAG, "NOT A VALID SMBFILE VIDEO URL:" + uri);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "respond Exception:" + e.getMessage());
         }
         return response != null ? response : createResponse(
                 Response.Status.NOT_FOUND, MIME_PLAINTEXT,

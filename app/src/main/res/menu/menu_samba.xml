@@ -31,6 +31,12 @@
         android:showAsAction="never" />
 
     <item
+        android:id="@+id/action_play_video_3rd"
+        android:title="Play Video by 3RD"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+
+    <item
         android:id="@+id/action_download"
         android:title="@string/download"
         android:orderInCategory="100"
