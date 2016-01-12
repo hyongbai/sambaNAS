@@ -1,6 +1,8 @@
 samba-nas
 ===
 
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-samba--nas-green.svg?style=true)](https://android-arsenal.com/details/1/3015)
+
 Samba-nas anims to explore remote file(s)/folder(s) in your NAS/samba server.
 
 > - You can upload image/videos
